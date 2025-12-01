@@ -1,28 +1,72 @@
 <!DOCTYPE html>
-<html lang="es">
-<!-- REEMPLAZA tu head actual con esto: -->
+<html lang="es" class="no-js">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 🔒 HEADERS DE SEGURIDAD -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.paypal.com https://www.paypalobjects.com https://www.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://www.paypal.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com; frame-src 'self' https://www.paypal.com; object-src 'none'; base-uri 'self'; form-action 'self' https://www.paypal.com;">
+    <!-- 🔒 HEADERS DE SEGURIDAD COMPLETOS -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://www.paypal.com https://www.paypalobjects.com https://www.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app 'unsafe-inline' 'unsafe-eval';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: https: blob:;
+        font-src 'self' data:;
+        connect-src 'self' https://www.paypal.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com;
+        frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self' https://www.paypal.com https://www.sandbox.paypal.com;
+        upgrade-insecure-requests;
+        block-all-mixed-content;
+    ">
+    
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+    <meta http-equiv="Permissions-Policy" content="
+        geolocation=(), 
+        microphone=(), 
+        camera=(), 
+        payment=(self https://www.paypal.com),
+        interest-cohort=()
+    ">
+    
+    <!-- Prevención de ataques XSS -->
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    
+    <!-- Control de recursos externos -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    
+    <!-- Prevención de telefonos móviles -->
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+    
+    <!-- Cache seguro -->
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     
     <title>App-SpayCine Premium</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://www.paypal.com/sdk/js?client-id=AdKeDj6pGfzL4OKwlqMCS3mcVpfSJMifWgHajHG7c2JAX3IAiLhJ5jIcHGX2uWKFCc5ftaVzdbVjAHZN&vault=true&intent=subscription"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- Carga segura de scripts externos -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AdKeDj6pGfzL4OKwlqMCS3mcVpfSJMifWgHajHG7c2JAX3IAiLhJ5jIcHGX2uWKFCc5ftaVzdbVjAHZN&vault=true&intent=subscription&components=buttons" 
+            defer 
+            crossorigin="anonymous"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" 
+            defer 
+            crossorigin="anonymous"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js" 
+            defer 
+            crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">
         <header>
             <div class="logo">
                 <h1>SpayCine</h1>
+                <div class="security-badge">🔒 Pago 100% Seguro</div>
             </div>
             <p class="subtitle">Sin anuncios • Descargas • Soporte prioritario</p>
         </header>
@@ -87,6 +131,11 @@
         <div class="app-info">
             <h3>📱 ¿Cómo activar mi suscripción?</h3>
             <p>Después del pago, recibirás un código premium que podrás canjear en la app para activar tu suscripción</p>
+            <div class="security-features">
+                <p>🔒 <strong>Transacción Segura:</strong> Tus datos están protegidos con encriptación SSL 256-bit</p>
+                <p>🛡️ <strong>Sin almacenamiento:</strong> No guardamos información de pago en nuestros servidores</p>
+                <p>✅ <strong>Garantía:</strong> Código válido inmediatamente después del pago confirmado</p>
+            </div>
         </div>
 
         <!-- Modal de Código Generado -->
@@ -96,10 +145,19 @@
                 <h2>🎉 ¡Suscripción Exitosa!</h2>
                 <div class="code-container">
                     <p>Tu código premium es:</p>
-                    <div id="premiumCode" class="premium-code"></div>
+                    <div id="premiumCode" class="premium-code" contenteditable="false"></div>
                     <div id="planInfo" class="plan-info"></div>
+                    <div class="security-warning">
+                        <p>⚠️ <strong>MEDIDAS DE SEGURIDAD ACTIVAS:</strong></p>
+                        <ul>
+                            <li>✅ Código generado con criptografía segura</li>
+                            <li>✅ Válido por única vez</li>
+                            <li>✅ Registrado con timestamp y IP</li>
+                            <li>⏱️ Código visible por 5 minutos</li>
+                        </ul>
+                    </div>
                     <p class="code-instructions">
-                        ⚠️ <strong>INSTRUCCIONES IMPORTANTES:</strong><br>
+                        <strong>INSTRUCCIONES IMPORTANTES:</strong><br>
                         1. Copia este código<br>
                         2. Abre la app <strong>App-Animes</strong><br>
                         3. Ve a "Canjear Código"<br>
@@ -111,11 +169,21 @@
                     <button id="copyCode" class="copy-btn">📋 Copiar Código</button>
                     <button id="closeModal" class="close-btn">✅ Entendido</button>
                 </div>
+                <div class="timer">
+                    <p>⏳ Este mensaje se cerrará automáticamente en: <span id="countdown">300</span> segundos</p>
+                </div>
             </div>
         </div>
+
+        <!-- Footer de seguridad -->
+        <footer class="security-footer">
+            <p>🔐 <strong>Protegido por:</strong> SSL/TLS • CSP • Firebase Security Rules • PayPal Protection</p>
+            <p>© 2024 App-SpayCine Premium. Todos los derechos reservados.</p>
+        </footer>
     </div>
 
-    <script src="firebase-config.js"></script>
-    <script src="script.js"></script>
+    <!-- Scripts locales -->
+    <script src="firebase-config.js" defer></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
