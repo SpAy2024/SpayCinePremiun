@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App-Animes Premium</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.paypal.com/sdk/js?client-id=AdKeDj6pGfzL4OKwlqMCS3mcVpfSJMifWgHajHG7c2JAX3IAiLhJ5jIcHGX2uWKFCc5ftaVzdbVjAHZN&vault=true&intent=subscription"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>SpayCine</h1>
+            </div>
+            <p class="subtitle">Sin anuncios • Descargas • Soporte prioritario</p>
+        </header>
+
+        <div class="plans-container">
+            <!-- Plan 1 Mes -->
+            <div class="plan-card" data-plan="mensual">
+                <div class="plan-header">
+                    <h3>1 MES</h3>
+                    <div class="price">$2.99<span>/mes</span></div>
+                </div>
+                <div class="plan-features">
+                    <ul>
+                        <li>✅ Disfruta sin anuncios</li>
+                        <li>✅ Descargas offline</li>
+                        <li>✅ Soporte prioritario</li>
+                    </ul>
+                </div>
+                <!-- Botón PayPal 1 Mes -->
+                <div id="paypal-button-container-P-18381349AF867540CNEVSH5I" class="paypal-button-wrapper"></div>
+            </div>
+
+            <!-- Plan 3 Meses -->
+            <div class="plan-card popular" data-plan="3meses">
+                <div class="popular-badge">MÁS POPULAR</div>
+                <div class="plan-header">
+                    <h3>3 MESES</h3>
+                    <div class="price">$7.99<span>/3 meses</span></div>
+                    <div class="savings">Ahorras 20%</div>
+                </div>
+                <div class="plan-features">
+                    <ul>
+                        <li>✅ Disfruta sin anuncios</li>
+                        <li>✅ Descargas offline</li>
+                        <li>✅ Soporte prioritario</li>
+                    </ul>
+                </div>
+                <!-- Botón PayPal 3 Meses -->
+                <div id="paypal-button-container-P-5PP81994FM215525RNEVSJFA" class="paypal-button-wrapper"></div>
+            </div>
+
+            <!-- Plan 1 Año -->
+            <div class="plan-card" data-plan="year">
+                <div class="plan-header">
+                    <h3>1 AÑO</h3>
+                    <div class="price">$24.99<span>/año</span></div>
+                    <div class="savings">Ahorras 40%</div>
+                </div>
+                <div class="plan-features">
+                    <ul>
+                        <li>✅ Disfruta sin anuncios</li>
+                        <li>✅ Descargas offline</li>
+                        <li>✅ Soporte prioritario</li>
+                    </ul>
+                </div>
+                <!-- Botón PayPal 1 Año -->
+                <div id="paypal-button-container-P-3E203769WC9540323NEVSJ5Q" class="paypal-button-wrapper"></div>
+            </div>
+        </div>
+
+        <!-- Información de la App -->
+        <div class="app-info">
+            <h3>📱 ¿Cómo activar mi suscripción?</h3>
+            <p>Después del pago, recibirás un código premium que podrás canjear en la app para activar tu suscripción</p>
+        </div>
+
+        <!-- Modal de Código Generado -->
+        <div id="codeModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>🎉 ¡Suscripción Exitosa!</h2>
+                <div class="code-container">
+                    <p>Tu código premium es:</p>
+                    <div id="premiumCode" class="premium-code"></div>
+                    <div id="planInfo" class="plan-info"></div>
+                    <p class="code-instructions">
+                        ⚠️ <strong>INSTRUCCIONES IMPORTANTES:</strong><br>
+                        1. Copia este código<br>
+                        2. Abre la app <strong>App-Animes</strong><br>
+                        3. Ve a "Canjear Código"<br>
+                        4. Pega el código y activa<br>
+                        ⚠️ <strong>SOLO SE PUEDE USAR UNA VEZ</strong>
+                    </p>
+                </div>
+                <div class="modal-buttons">
+                    <button id="copyCode" class="copy-btn">📋 Copiar Código</button>
+                    <button id="closeModal" class="close-btn">✅ Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
