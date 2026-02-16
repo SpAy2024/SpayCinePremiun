@@ -562,3 +562,104 @@ header::before {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--netflix-red-dark);
 }
+
+/* Agrega esto a tu archivo styles.css */
+.paypal-button-wrapper {
+    margin-top: 20px;
+    min-height: 50px;
+    width: 100%;
+}
+
+.paypal-button-wrapper iframe {
+    border-radius: 50px !important;
+    overflow: hidden !important;
+}
+
+/* Spinner para loading */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #4ecdc4;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 600px;
+    position: relative;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.premium-code {
+    background: #f0f0f0;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 20px;
+    text-align: center;
+    margin: 20px 0;
+    border: 2px dashed #4ecdc4;
+    user-select: all;
+}
+
+.copy-btn {
+    background: linear-gradient(45deg, #4ecdc4, #44a08d);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.close-btn {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
