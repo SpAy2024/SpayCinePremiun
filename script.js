@@ -1,4 +1,4 @@
-// script.js - Versión simplificada y corregida
+// script.js - Versión ultra simplificada que funciona
 (function() {
     'use strict';
     
@@ -29,305 +29,280 @@
     
     // ===== VARIABLES GLOBALES =====
     let currentTransaction = null;
-    let modalCountdown = null;
     
-    // ===== FUNCIÓN PRINCIPAL PARA INICIALIZAR PAYPAL =====
+    // ===== FUNCIÓN PARA INICIALIZAR PAYPAL =====
     function initializePayPalButtons() {
-        console.log('🔄 Inicializando botones de PayPal...');
+        console.log('Inicializando PayPal...');
         
-        // Verificar que PayPal esté cargado
+        // Verificar PayPal
         if (typeof paypal === 'undefined') {
-            console.error('❌ PayPal no está cargado');
+            console.log('PayPal no cargado, reintentando...');
             setTimeout(initializePayPalButtons, 1000);
             return;
         }
         
-        // Inicializar cada botón
-        Object.keys(PLANS_CONFIG).forEach(planType => {
-            const plan = PLANS_CONFIG[planType];
-            initializeButton(plan, planType);
-        });
-    }
-    
-    function initializeButton(planConfig, planType) {
-        const containerId = planConfig.containerId;
-        
-        try {
-            paypal.Buttons({
-                style: {
-                    shape: 'rect',
-                    color: 'gold',
-                    layout: 'vertical',
-                    label: 'subscribe'
-                },
+        // Función segura para crear botón
+        function createPayPalButton(planConfig, planType) {
+            try {
+                console.log(`Creando botón para ${planConfig.name}`);
                 
-                createSubscription: function(data, actions) {
-                    console.log('Creando suscripción para:', planConfig.name);
-                    return actions.subscription.create({
-                        plan_id: planConfig.paypalId
-                    });
-                },
-                
-                onApprove: async function(data, actions) {
-                    console.log('✅ Pago aprobado:', data.subscriptionID);
+                paypal.Buttons({
+                    style: {
+                        shape: 'rect',
+                        color: 'gold',
+                        layout: 'vertical',
+                        label: 'subscribe'
+                    },
                     
-                    // Mostrar loading
-                    showLoading('Generando tu código premium...');
+                    createSubscription: function(data, actions) {
+                        console.log('Creando suscripción:', planConfig.paypalId);
+                        return actions.subscription.create({
+                            plan_id: planConfig.paypalId
+                        });
+                    },
                     
-                    // Generar código
-                    const code = generatePremiumCode(planType);
+                    onApprove: function(data, actions) {
+                        console.log('✅ Pago aprobado:', data.subscriptionID);
+                        
+                        // Generar código INMEDIATAMENTE
+                        const code = generateCode(planType);
+                        
+                        // MOSTRAR CÓDIGO INMEDIATAMENTE
+                        showCode(code, planConfig);
+                        
+                        // Intentar guardar en Firebase (en segundo plano)
+                        saveCodeToFirebase(code, planType, data.subscriptionID, planConfig)
+                            .then(() => console.log('✅ Código guardado'))
+                            .catch(err => console.log('⚠️ Firebase offline, código guardado localmente'));
+                    },
                     
-                    // Guardar en Firebase
-                    try {
-                        await saveCodeToFirebase(code, planType, data.subscriptionID, planConfig);
-                        console.log('✅ Código guardado en Firebase');
-                    } catch (error) {
-                        console.warn('⚠️ Error en Firebase, pero el código es válido:', error);
+                    onError: function(err) {
+                        console.error('Error PayPal:', err);
+                        alert('Error en el pago. Por favor, intenta de nuevo.');
+                    },
+                    
+                    onCancel: function() {
+                        console.log('Pago cancelado');
                     }
                     
-                    // Ocultar loading y mostrar código
-                    hideLoading();
-                    showCodeModal(code, planConfig);
-                },
+                }).render('#' + planConfig.containerId);
                 
-                onError: function(err) {
-                    console.error('❌ Error en PayPal:', err);
-                    alert('Error en el proceso de pago. Por favor, intenta de nuevo.');
-                },
+                console.log(`✅ Botón ${planConfig.name} listo`);
                 
-                onCancel: function(data) {
-                    console.log('⏹️ Pago cancelado');
-                }
-                
-            }).render('#' + containerId);
-            
-            console.log(`✅ Botón para ${planConfig.name} renderizado`);
-            
-        } catch (error) {
-            console.error(`❌ Error con botón ${planConfig.name}:`, error);
-            
-            // Mostrar mensaje en el contenedor
-            const container = document.getElementById(containerId);
-            if (container) {
-                container.innerHTML = `
-                    <div style="padding: 20px; background: #ffebee; border-radius: 10px; text-align: center;">
-                        <p>⚠️ Error cargando botón de pago</p>
-                        <p>Recarga la página para intentar de nuevo</p>
-                    </div>
-                `;
+            } catch (error) {
+                console.error(`Error con ${planConfig.name}:`, error);
+                document.getElementById(planConfig.containerId).innerHTML = 
+                    '<p style="color:red;padding:10px;">Error cargando botón</p>';
             }
         }
+        
+        // Crear todos los botones
+        Object.keys(PLANS_CONFIG).forEach(planType => {
+            createPayPalButton(PLANS_CONFIG[planType], planType);
+        });
     }
     
     // ===== FUNCIONES PARA CÓDIGOS =====
     
-    function generatePremiumCode(planType) {
-        const timestamp = Date.now().toString(36).toUpperCase();
+    function generateCode(planType) {
+        const date = new Date();
+        const year = date.getFullYear().toString().slice(-2);
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
         const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const random2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const random2 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
         
         const prefixes = {
-            'mensual': 'ANIM1M',
-            '3meses': 'ANIM3M',
-            'year': 'ANIM1Y'
+            'mensual': 'ANM',
+            '3meses': 'AN3',
+            'year': 'ANY'
         };
         
-        const prefix = prefixes[planType] || 'ANIMES';
-        return `${prefix}-${timestamp}-${random}-${random2}`;
+        const prefix = prefixes[planType] || 'ANC';
+        return `${prefix}${year}${month}${day}-${random}-${random2}`;
     }
     
     async function saveCodeToFirebase(code, planType, subscriptionId, planConfig) {
-        // Usar window.firebaseDB si está disponible
+        // Intentar Firebase
         if (window.firebaseDB && window.firebaseDB.saveCode) {
-            return await window.firebaseDB.saveCode(code, planType, subscriptionId, planConfig);
+            try {
+                await window.firebaseDB.saveCode(code, planType, subscriptionId, planConfig);
+                return true;
+            } catch (e) {
+                console.log('Firebase error, guardando local');
+            }
         }
         
-        // Fallback: guardar en localStorage
-        const codes = JSON.parse(localStorage.getItem('premiumCodes') || '[]');
-        codes.push({
+        // Guardar localmente
+        const saved = JSON.parse(localStorage.getItem('premiumCodes') || '[]');
+        saved.push({
             code: code,
             plan: planConfig.name,
             date: new Date().toISOString(),
             subscriptionId: subscriptionId
         });
-        localStorage.setItem('premiumCodes', JSON.stringify(codes));
-        
+        localStorage.setItem('premiumCodes', JSON.stringify(saved));
         return true;
     }
     
-    // ===== FUNCIONES DE UI =====
+    // ===== FUNCIONES UI =====
     
-    function showLoading(message) {
-        const loading = document.createElement('div');
-        loading.id = 'loadingOverlay';
-        loading.innerHTML = `
-            <div style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.8);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 9999;
-            ">
+    function showCode(code, planConfig) {
+        console.log('🎫 Mostrando código:', code);
+        
+        // Buscar o crear modal
+        let modal = document.getElementById('codeModal');
+        
+        if (!modal) {
+            // Crear modal si no existe
+            modal = document.createElement('div');
+            modal.id = 'codeModal';
+            modal.innerHTML = `
                 <div style="
-                    background: white;
-                    padding: 30px;
-                    border-radius: 15px;
-                    text-align: center;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.9);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
                 ">
-                    <div class="spinner" style="
-                        width: 50px;
-                        height: 50px;
-                        border: 5px solid #f3f3f3;
-                        border-top: 5px solid #4ecdc4;
-                        border-radius: 50%;
-                        animation: spin 1s linear infinite;
-                        margin: 0 auto 20px;
-                    "></div>
-                    <p>${message}</p>
+                    <div style="
+                        background: white;
+                        padding: 30px;
+                        border-radius: 15px;
+                        max-width: 500px;
+                        width: 90%;
+                        text-align: center;
+                        position: relative;
+                        animation: slideIn 0.3s ease;
+                    ">
+                        <span onclick="this.parentElement.parentElement.parentElement.remove()" style="
+                            position: absolute;
+                            right: 15px;
+                            top: 10px;
+                            font-size: 28px;
+                            cursor: pointer;
+                        ">&times;</span>
+                        
+                        <h2 style="color: #4ecdc4; margin-bottom: 20px;">🎉 ¡Suscripción Exitosa!</h2>
+                        
+                        <div id="codeDisplay" style="
+                            background: #f5f5f5;
+                            padding: 20px;
+                            border-radius: 10px;
+                            font-family: monospace;
+                            font-size: 24px;
+                            letter-spacing: 2px;
+                            margin: 20px 0;
+                            border: 2px dashed #4ecdc4;
+                            user-select: all;
+                        ">${code}</div>
+                        
+                        <div id="planInfo" style="margin: 15px 0; padding: 15px; background: #e8f5e9; border-radius: 10px;">
+                            <p><strong>Plan:</strong> ${planConfig.name}</p>
+                            <p><strong>Precio:</strong> ${planConfig.price}</p>
+                            <p><strong>Duración:</strong> ${planConfig.days} días</p>
+                        </div>
+                        
+                        <div style="margin: 20px 0; padding: 15px; background: #fff3cd; border-radius: 10px; text-align: left;">
+                            <p style="color: #856404;"><strong>📱 INSTRUCCIONES:</strong></p>
+                            <ol style="color: #856404; margin-left: 20px;">
+                                <li>Copia este código</li>
+                                <li>Abre la app App-Animes</li>
+                                <li>Ve a "Canjear Código"</li>
+                                <li>Pega el código y activa</li>
+                            </ol>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button onclick="copyCode('${code}')" style="
+                                background: #4ecdc4;
+                                color: white;
+                                border: none;
+                                padding: 12px 30px;
+                                border-radius: 10px;
+                                font-size: 16px;
+                                cursor: pointer;
+                                flex: 1;
+                            ">📋 Copiar Código</button>
+                            
+                            <button onclick="this.closest('#codeModal').remove()" style="
+                                background: #95a5a6;
+                                color: white;
+                                border: none;
+                                padding: 12px 30px;
+                                border-radius: 10px;
+                                font-size: 16px;
+                                cursor: pointer;
+                            ">✅ Cerrar</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        `;
-        document.body.appendChild(loading);
-        
-        // Añadir estilo para la animación
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    function hideLoading() {
-        const loading = document.getElementById('loadingOverlay');
-        if (loading) loading.remove();
-    }
-    
-    function showCodeModal(code, planConfig) {
-        const modal = document.getElementById('codeModal');
-        const codeElement = document.getElementById('premiumCode');
-        const planInfo = document.getElementById('planInfo');
-        
-        if (!modal || !codeElement) {
-            // Fallback si no hay modal
-            alert(`¡Suscripción exitosa!\n\nTu código premium es:\n${code}\n\nPlan: ${planConfig.name}\n\nGuarda este código para activar la app.`);
-            return;
-        }
-        
-        codeElement.textContent = code;
-        planInfo.innerHTML = `
-            <p><strong>Plan:</strong> ${planConfig.name}</p>
-            <p><strong>Precio:</strong> ${planConfig.price}</p>
-            <p><strong>Válido por:</strong> ${planConfig.days} días</p>
-        `;
-        
-        modal.style.display = 'block';
-        
-        // Auto-cerrar después de 5 minutos
-        let seconds = 300;
-        const countdown = document.getElementById('countdown');
-        
-        if (modalCountdown) clearInterval(modalCountdown);
-        
-        modalCountdown = setInterval(() => {
-            seconds--;
-            if (countdown) countdown.textContent = seconds;
+            `;
+            document.body.appendChild(modal);
             
-            if (seconds <= 0) {
-                clearInterval(modalCountdown);
-                modal.style.display = 'none';
-            }
-        }, 1000);
-    }
-    
-    // ===== EVENT LISTENERS =====
-    
-    function setupEventListeners() {
-        // Cerrar modal
-        const closeBtn = document.querySelector('.close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                document.getElementById('codeModal').style.display = 'none';
-                if (modalCountdown) clearInterval(modalCountdown);
-            });
+            // Añadir animación
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateY(-100px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        } else {
+            // Actualizar modal existente
+            modal.querySelector('#codeDisplay').textContent = code;
+            modal.querySelector('#planInfo').innerHTML = `
+                <p><strong>Plan:</strong> ${planConfig.name}</p>
+                <p><strong>Precio:</strong> ${planConfig.price}</p>
+                <p><strong>Duración:</strong> ${planConfig.days} días</p>
+            `;
+            modal.style.display = 'flex';
         }
         
-        // Copiar código
-        const copyBtn = document.getElementById('copyCode');
-        if (copyBtn) {
-            copyBtn.addEventListener('click', function() {
-                const code = document.getElementById('premiumCode').textContent;
-                
-                navigator.clipboard.writeText(code).then(() => {
-                    this.textContent = '✅ ¡Copiado!';
-                    setTimeout(() => {
-                        this.textContent = '📋 Copiar Código';
-                    }, 2000);
-                }).catch(() => {
-                    alert('Código: ' + code);
-                });
+        // Hacer función de copia global
+        window.copyCode = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Código copiado al portapapeles');
+            }).catch(() => {
+                prompt('Copia este código:', text);
             });
-        }
-        
-        // Cerrar modal con botón
-        const closeModalBtn = document.getElementById('closeModal');
-        if (closeModalBtn) {
-            closeModalBtn.addEventListener('click', () => {
-                document.getElementById('codeModal').style.display = 'none';
-                if (modalCountdown) clearInterval(modalCountdown);
-            });
-        }
+        };
     }
     
     // ===== INICIALIZACIÓN =====
     
     function initialize() {
-        console.log('🚀 Inicializando app...');
+        console.log('🚀 Iniciando...');
         
-        // Configurar event listeners
-        setupEventListeners();
-        
-        // Esperar a que PayPal esté listo
+        // Verificar PayPal cada segundo
         let attempts = 0;
-        const maxAttempts = 10;
-        
         const checkPayPal = setInterval(() => {
-            attempts++;
-            
             if (typeof paypal !== 'undefined') {
                 clearInterval(checkPayPal);
-                console.log('✅ PayPal SDK detectado');
-                
-                // Pequeño retraso para asegurar que el DOM está listo
-                setTimeout(() => {
-                    initializePayPalButtons();
-                }, 500);
-                
-            } else if (attempts >= maxAttempts) {
+                console.log('✅ PayPal listo');
+                setTimeout(initializePayPalButtons, 500);
+            } else if (attempts++ > 15) {
                 clearInterval(checkPayPal);
-                console.error('❌ PayPal SDK no cargado después de', maxAttempts, 'intentos');
-                
-                // Mostrar mensaje de error
-                document.querySelectorAll('.paypal-button-wrapper').forEach(wrapper => {
-                    wrapper.innerHTML = `
-                        <div style="padding: 20px; background: #ffebee; border-radius: 10px; text-align: center;">
-                            <p>⚠️ Error cargando PayPal</p>
-                            <p>Por favor, recarga la página</p>
-                        </div>
-                    `;
-                });
+                console.log('⚠️ PayPal timeout');
             }
         }, 1000);
+        
+        // Configurar cierre de modal con ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('codeModal');
+                if (modal) modal.remove();
+            }
+        });
     }
     
-    // Iniciar cuando el DOM esté listo
+    // Iniciar
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initialize);
     } else {
@@ -335,4 +310,3 @@
     }
     
 })();
-
