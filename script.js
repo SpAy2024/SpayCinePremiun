@@ -137,35 +137,7 @@
                     });
                 },
     
-                onApprove: function(data, actions) {
-                    console.log('✅ Suscripción aprobada:', {
-                        id: data.subscriptionID,
-                        plan: planConfig.name
-                    });
-                    
-                    currentTransaction = {
-                        subscriptionId: data.subscriptionID,
-                        planType: planType,
-                        timestamp: Date.now(),
-                        status: 'approved'
-                    };
-                    
-                    // Mostrar loading con seguridad
-                    showLoading('Generando tu código premium seguro...');
-                    
-                    // Generar y guardar código premium con retry
-                    generateAndSavePremiumCode(planType, data.subscriptionID, planConfig)
-                        .then(success => {
-                            if (!success) {
-                                throw new Error('Error generando código');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('❌ Error en proceso:', error);
-                            hideLoading();
-                            showErrorModal('Error procesando tu suscripción. Contacta soporte: servidor2appspay@gmail.com');
-                        });
-                },
+               
     
                 onError: function(err) {
                     console.error('❌ Error en PayPal:', err);
@@ -749,3 +721,4 @@
     };
     
 })();
+
