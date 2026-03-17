@@ -1,32 +1,32 @@
-// script.js - Versión actualizada con generación de códigos según plan
+// script.js - Versión actualizada con los nuevos Plan IDs de PayPal
 (function() {
     'use strict';
     
-    // ===== CONFIGURACIÓN =====
+    // ===== CONFIGURACIÓN CON LOS NUEVOS PLAN IDs =====
     const PLANS_CONFIG = {
         'mensual': {
             name: '1 Mes',
             price: '$2.99',
             days: 30,
             type: 'mensual',
-            paypalId: 'P-2UR88313VV523743JNG4WMAQ',
-            containerId: 'paypal-button-container-P-18381349AF867540CNEVSH5I'
+            paypalId: 'P-2UR88313VV523743JNG4WMAQ', // ✅ NUEVO ID 1 MES
+            containerId: 'paypal-button-container-P-2UR88313VV523743JNG4WMAQ'
         },
         '3meses': {
             name: '3 Meses', 
-            price: '$6.99',
+            price: '$7.99',
             days: 90,
             type: '3meses',
-            paypalId: 'P-65Y77926TJ7680700NG4WOJI',
-            containerId: 'paypal-button-container-P-5PP81994FM215525RNEVSJFA'
+            paypalId: 'P-65Y77926TJ7680700NG4WOJI', // ✅ NUEVO ID 3 MESES
+            containerId: 'paypal-button-container-P-65Y77926TJ7680700NG4WOJI'
         },
         'year': {
             name: '1 Año',
             price: '$24.99', 
             days: 365,
             type: 'year',
-            paypalId: 'P-94K64420E70610916NG4WPKQ',
-            containerId: 'paypal-button-container-P-3E203769WC9540323NEVSJ5Q'
+            paypalId: 'P-94K64420E70610916NG4WPKQ', // ✅ NUEVO ID 1 AÑO
+            containerId: 'paypal-button-container-P-94K64420E70610916NG4WPKQ'
         }
     };
     
@@ -35,7 +35,12 @@
     
     // ===== FUNCIÓN PARA INICIALIZAR PAYPAL =====
     function initializePayPalButtons() {
-        console.log('Inicializando PayPal...');
+        console.log('Inicializando PayPal con los nuevos Plan IDs...');
+        console.log('Plan IDs:', {
+            mensual: 'P-2UR88313VV523743JNG4WMAQ',
+            '3meses': 'P-65Y77926TJ7680700NG4WOJI',
+            year: 'P-94K64420E70610916NG4WPKQ'
+        });
         
         // Verificar PayPal
         if (typeof paypal === 'undefined') {
@@ -44,10 +49,10 @@
             return;
         }
         
-        // Función segura para crear botón
+        // Función para crear botón
         function createPayPalButton(planConfig, planType) {
             try {
-                console.log(`Creando botón para ${planConfig.name}`);
+                console.log(`Creando botón para ${planConfig.name} con ID: ${planConfig.paypalId}`);
                 
                 paypal.Buttons({
                     style: {
@@ -58,23 +63,23 @@
                     },
                     
                     createSubscription: function(data, actions) {
-                        console.log('Creando suscripción:', planConfig.paypalId);
+                        console.log(`Creando suscripción para ${planConfig.name}:`, planConfig.paypalId);
                         return actions.subscription.create({
                             plan_id: planConfig.paypalId
                         });
                     },
                     
                     onApprove: function(data, actions) {
-                        console.log('✅ Pago aprobado:', data.subscriptionID);
+                        console.log(`✅ Pago aprobado para ${planConfig.name}:`, data.subscriptionID);
                         
                         // Generar código según el plan
                         const code = generateCode(planConfig.type);
                         
-                        // Guardar en Firebase con la estructura requerida
+                        // Guardar en Firebase
                         saveCodeToFirebase(code, planConfig, data.subscriptionID)
                             .then(() => {
-                                console.log('✅ Código guardado en Firebase');
-                                // Mostrar código al usuario
+                                console.log('✅ Código guardado en Firebase:', code);
+                                // Mostrar modal con el código
                                 showCode(code, planConfig);
                             })
                             .catch(error => {
@@ -112,27 +117,23 @@
     
     // ===== FUNCIÓN PARA GENERAR CÓDIGO =====
     function generateCode(planType) {
-        // Caracteres permitidos (mayúsculas y números)
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let code = '';
         
-        // Generar código de 7 caracteres (como en tu ejemplo: ABC123, AVS1986, SPAYCINE6)
-        // Para SPAYCINE6 son 9 caracteres, así que haremos variable
-        let length = 7;
-        
-        // Para el plan anual podemos hacerlo más largo como en tu ejemplo
+        // Longitud según el plan
+        let length = 7; // Por defecto 7 caracteres
         if (planType === 'year') {
-            length = 9; // SPAYCINE6 tiene 9 caracteres
+            length = 9; // Para anual, 9 caracteres como SPAYCINE6
         }
         
+        // Generar código aleatorio
         for (let i = 0; i < length; i++) {
             const randomIndex = Math.floor(Math.random() * chars.length);
             code += chars[randomIndex];
         }
         
-        // Asegurar que no comience con número (opcional)
+        // Asegurar que empiece con letra
         if (code.match(/^[0-9]/)) {
-            // Reemplazar el primer carácter con una letra si es número
             const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             code = letters.charAt(Math.floor(Math.random() * letters.length)) + code.substring(1);
         }
@@ -143,7 +144,6 @@
     
     // ===== FUNCIÓN PARA GUARDAR EN FIREBASE =====
     async function saveCodeToFirebase(code, planConfig, subscriptionId) {
-        // Intentar guardar en Firebase
         if (window.firebaseDB && window.firebaseDB.saveCode) {
             try {
                 await window.firebaseDB.saveCode(code, planConfig, subscriptionId);
@@ -161,7 +161,7 @@
     function showCode(code, planConfig, offline = false) {
         console.log('🎫 Mostrando código:', code);
         
-        // Eliminar modal existente si hay
+        // Eliminar modal existente
         const existingModal = document.getElementById('codeModal');
         if (existingModal) {
             existingModal.remove();
@@ -172,7 +172,7 @@
         modal.id = 'codeModal';
         modal.className = 'modal';
         
-        // Determinar el tipo de plan para mostrar
+        // Texto del plan
         let planTypeText = '';
         switch(planConfig.type) {
             case 'mensual':
@@ -184,8 +184,6 @@
             case 'year':
                 planTypeText = 'Anual';
                 break;
-            default:
-                planTypeText = planConfig.name;
         }
         
         modal.innerHTML = `
@@ -203,19 +201,19 @@
                         <p><strong>Duración:</strong> ${planConfig.days} días</p>
                     </div>
                     
-                    ${offline ? '<div class="offline-warning">⚠️ Código guardado localmente - Conéctate a internet para sincronizar</div>' : ''}
+                    ${offline ? '<div class="offline-warning">⚠️ Código guardado localmente - Sincronizará cuando haya conexión</div>' : ''}
                     
                     <div class="security-warning">
                         <p>⚠️ <strong>IMPORTANTE:</strong></p>
                         <ul>
                             <li>✅ Código válido por única vez</li>
-                            <li>✅ No compartas este código</li>
                             <li>✅ Guardado en Firebase</li>
+                            <li>✅ No compartas este código</li>
                         </ul>
                     </div>
                     
                     <p class="code-instructions">
-                        <strong>INSTRUCCIONES:</strong><br>
+                        <strong>📱 INSTRUCCIONES:</strong><br>
                         1. Copia este código<br>
                         2. Abre la app SpayCine<br>
                         3. Ve a "Canjear Código"<br>
@@ -225,10 +223,10 @@
                 
                 <div class="modal-buttons">
                     <button class="copy-btn" onclick="copyCodeToClipboard('${code}')">
-                        📋 Copiar Código
+                        📋 COPIAR CÓDIGO
                     </button>
                     <button class="close-btn" onclick="closeCodeModal()">
-                        ✅ Entendido
+                        ✅ ENTENDIDO
                     </button>
                 </div>
             </div>
@@ -241,21 +239,27 @@
             modal.style.display = 'block';
         }, 100);
         
-        // Configurar botón de cerrar
+        // Configurar cierre
         const closeBtn = modal.querySelector('.close');
         closeBtn.onclick = function() {
             modal.remove();
         };
         
-        // Cerrar al hacer clic fuera
         window.onclick = function(event) {
             if (event.target === modal) {
                 modal.remove();
             }
         };
+        
+        // Auto-cerrar después de 5 minutos
+        setTimeout(() => {
+            if (document.getElementById('codeModal')) {
+                document.getElementById('codeModal').remove();
+            }
+        }, 300000); // 5 minutos
     }
     
-    // ===== FUNCIONES GLOBALES PARA EL MODAL =====
+    // ===== FUNCIONES GLOBALES =====
     window.copyCodeToClipboard = function(code) {
         navigator.clipboard.writeText(code).then(() => {
             alert('✅ Código copiado al portapapeles');
@@ -280,9 +284,9 @@
     
     // ===== INICIALIZACIÓN =====
     function initialize() {
-        console.log('🚀 Iniciando sistema de pagos...');
+        console.log('🚀 Iniciando sistema de pagos con nuevos Plan IDs...');
         
-        // Verificar PayPal cada segundo
+        // Verificar PayPal
         let attempts = 0;
         const checkPayPal = setInterval(() => {
             if (typeof paypal !== 'undefined') {
@@ -291,16 +295,11 @@
                 setTimeout(initializePayPalButtons, 500);
             } else if (attempts++ > 15) {
                 clearInterval(checkPayPal);
-                console.log('⚠️ PayPal timeout - Recargando página...');
-                // Mostrar mensaje de error
-                const containers = document.querySelectorAll('.paypal-button-wrapper');
-                containers.forEach(container => {
-                    container.innerHTML = '<p style="color:red;">Error cargando PayPal. Recarga la página.</p>';
-                });
+                console.log('⚠️ PayPal timeout');
             }
         }, 1000);
         
-        // Configurar cierre de modal con ESC
+        // Cerrar modal con ESC
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 const modal = document.getElementById('codeModal');
@@ -309,7 +308,7 @@
         });
     }
     
-    // Iniciar cuando el DOM esté listo
+    // Iniciar
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initialize);
     } else {
