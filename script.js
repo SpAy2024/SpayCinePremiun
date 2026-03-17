@@ -1,7 +1,8 @@
-// script.js - VERSIÓN FINAL CORREGIDA
+// script.js
 (function() {
     'use strict';
     
+    // Configuración de planes
     const PLANS_CONFIG = {
         'mensual': {
             name: '1 Mes',
@@ -29,44 +30,59 @@
         }
     };
     
+    console.log('🚀 SpayCineHD - Sistema de pagos listo');
+    
     function initializePayPalButtons() {
-        console.log('✅ Inicializando PayPal con IDs correctos...');
-        
         if (typeof paypal === 'undefined') {
             setTimeout(initializePayPalButtons, 1000);
             return;
         }
         
+        console.log('✅ PayPal conectado en MODO PRODUCCIÓN');
+        
         Object.keys(PLANS_CONFIG).forEach(planType => {
             const plan = PLANS_CONFIG[planType];
             
             paypal.Buttons({
-                style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
+                style: { 
+                    shape: 'rect', 
+                    color: 'gold', 
+                    layout: 'vertical', 
+                    label: 'subscribe' 
+                },
                 
                 createSubscription: function(data, actions) {
-                    console.log(`Creando suscripción ${plan.name} con ID: ${plan.paypalId}`);
-                    return actions.subscription.create({ plan_id: plan.paypalId });
+                    console.log(`Procesando pago: ${plan.name}`);
+                    return actions.subscription.create({ 
+                        plan_id: plan.paypalId 
+                    });
                 },
                 
                 onApprove: function(data, actions) {
                     console.log(`✅ Pago aprobado:`, data.subscriptionID);
                     
-                    // Generar código
+                    // Generar código único
                     const code = generateCode(plan.type);
                     
                     // Guardar en Firebase
                     if (window.firebaseDB) {
                         window.firebaseDB.saveCode(code, plan, data.subscriptionID)
-                            .then(() => showCode(code, plan))
-                            .catch(() => showCode(code, plan, true));
+                            .then(() => {
+                                console.log('✅ Código guardado en Firebase');
+                                showCode(code, plan);
+                            })
+                            .catch(() => {
+                                console.log('⚠️ Error en Firebase, mostrando código igual');
+                                showCode(code, plan, true);
+                            });
                     } else {
                         showCode(code, plan, true);
                     }
                 },
                 
                 onError: function(err) {
-                    console.error('Error PayPal:', err);
-                    alert('Error en el pago. Intenta de nuevo.');
+                    console.error('Error:', err);
+                    alert('Error en el pago. Por favor, intenta de nuevo.');
                 }
                 
             }).render('#' + plan.containerId);
@@ -97,28 +113,42 @@
         const modal = document.getElementById('codeModal');
         if (!modal) return;
         
+        // Mostrar código
         document.getElementById('premiumCode').textContent = code;
         document.getElementById('planInfo').innerHTML = `
             <p><strong>Plan:</strong> ${plan.name}</p>
             <p><strong>Precio:</strong> ${plan.price}</p>
             <p><strong>Duración:</strong> ${plan.days} días</p>
+            ${offline ? '<p style="color: #ff9800;">⚠️ Modo offline - código guardado localmente</p>' : ''}
         `;
         
         modal.style.display = 'block';
         
-        // Configurar botón copiar
+        // Botón copiar
         document.getElementById('copyCode').onclick = () => {
             navigator.clipboard.writeText(code).then(() => {
+                alert('✅ Código copiado al portapapeles');
+            }).catch(() => {
+                // Fallback para móviles
+                const textarea = document.createElement('textarea');
+                textarea.value = code;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
                 alert('✅ Código copiado al portapapeles');
             });
         };
         
-        // Configurar cierre
+        // Cerrar modal
         document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
         document.querySelector('.close').onclick = () => modal.style.display = 'none';
-        window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
         
-        // Countdown
+        window.onclick = (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        };
+        
+        // Countdown de 5 minutos
         let seconds = 300;
         const countdownEl = document.getElementById('countdown');
         const timer = setInterval(() => {
