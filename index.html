@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 🔒 HEADERS DE SEGURIDAD COMPLETOS -->
-   <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' https://www.paypal.com https://www.paypalobjects.com https://www.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app 'unsafe-inline' 'unsafe-eval';
-    style-src 'self' 'unsafe-inline';
-    img-src 'self' data: https: blob:;
-    font-src 'self' data:;
-    connect-src 'self' https://www.paypal.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com https://www.gstatic.com;
-    frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com;
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self' https://www.paypal.com https://www.sandbox.paypal.com;
-    upgrade-insecure-requests;
-">
+    <!-- 🔒 HEADERS DE SEGURIDAD -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://www.paypal.com https://www.paypalobjects.com https://www.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app 'unsafe-inline' 'unsafe-eval';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: https: blob:;
+        font-src 'self' data:;
+        connect-src 'self' https://www.paypal.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com https://www.gstatic.com;
+        frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self' https://www.paypal.com https://www.sandbox.paypal.com;
+        upgrade-insecure-requests;
+    ">
     
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -29,14 +29,15 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>App-SpayCine Premium</title>
+    <title>SpayCineHD Premium</title>
     <link rel="stylesheet" href="styles.css">
     
-    <!-- SOLO UN SCRIPT DE PAYPAL - con TU client-id CORRECTO -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AeEPwhSoPP3YNeFd87QAqNO8UQG8Xd69cw4TcNnBYLmt9KD2S3Spt9a2JNr7Nj3mtuVaQuEQUCxK719_&vault=true&intent=subscription&components=buttons&enable-funding=card" 
+    <!-- PAYPAL PRODUCCIÓN - CON TU CLIENT ID REAL -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AZvnJPiVmaNSVR9poxUcahUcVibipdpEr7IA5IhsDpz8NWzer8SiwQ_l8y0rvk1IJVvRQUsGWNPs-dmh&vault=true&intent=subscription&components=buttons&enable-funding=card" 
             defer 
             crossorigin="anonymous"></script>
     
+    <!-- FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" 
             defer 
             crossorigin="anonymous"></script>
@@ -49,14 +50,14 @@
     <div class="container">
         <header>
             <div class="logo">
-                <h1>SpayCine</h1>
+                <h1>SpayCineHD</h1>
                 <div class="security-badge">🔒 Pago 100% Seguro</div>
             </div>
             <p class="subtitle">Sin anuncios • Descargas • Soporte prioritario</p>
         </header>
 
         <div class="plans-container">
-            <!-- Plan 1 Mes - CON ID CORRECTO -->
+            <!-- Plan 1 Mes -->
             <div class="plan-card" data-plan="mensual">
                 <div class="plan-header">
                     <h3>1 MES</h3>
@@ -68,11 +69,11 @@
                         <li>✅ Acceso premium completo</li>
                     </ul>
                 </div>
-                <!-- Botón PayPal 1 Mes con ID CORRECTO -->
+                <!-- Botón PayPal 1 Mes -->
                 <div id="paypal-button-container-P-2UR88313VV523743JNG4WMAQ" class="paypal-button-wrapper"></div>
             </div>
 
-            <!-- Plan 3 Meses - CON ID CORRECTO -->
+            <!-- Plan 3 Meses -->
             <div class="plan-card popular" data-plan="3meses">
                 <div class="popular-badge">MÁS POPULAR</div>
                 <div class="plan-header">
@@ -87,11 +88,11 @@
                         <li>✅ 20% de ahorro</li>
                     </ul>
                 </div>
-                <!-- Botón PayPal 3 Meses con ID CORRECTO -->
+                <!-- Botón PayPal 3 Meses -->
                 <div id="paypal-button-container-P-65Y77926TJ7680700NG4WOJI" class="paypal-button-wrapper"></div>
             </div>
 
-            <!-- Plan 1 Año - CON ID CORRECTO -->
+            <!-- Plan 1 Año -->
             <div class="plan-card" data-plan="year">
                 <div class="plan-header">
                     <h3>1 AÑO</h3>
@@ -105,7 +106,7 @@
                         <li>✅ 40% de ahorro</li>
                     </ul>
                 </div>
-                <!-- Botón PayPal 1 Año con ID CORRECTO -->
+                <!-- Botón PayPal 1 Año -->
                 <div id="paypal-button-container-P-94K64420E70610916NG4WPKQ" class="paypal-button-wrapper"></div>
             </div>
         </div>
@@ -131,18 +132,17 @@
                     <div id="premiumCode" class="premium-code" contenteditable="false"></div>
                     <div id="planInfo" class="plan-info"></div>
                     <div class="security-warning">
-                        <p>⚠️ <strong>MEDIDAS DE SEGURIDAD ACTIVAS:</strong></p>
+                        <p>⚠️ <strong>IMPORTANTE:</strong></p>
                         <ul>
-                            <li>✅ Código generado con criptografía segura</li>
-                            <li>✅ Válido por única vez</li>
-                            <li>✅ Registrado en Firebase</li>
-                            <li>⏱️ Código visible por 5 minutos</li>
+                            <li>✅ Código válido por única vez</li>
+                            <li>✅ Guardado en Firebase</li>
+                            <li>✅ No compartas este código</li>
                         </ul>
                     </div>
                     <p class="code-instructions">
-                        <strong>INSTRUCCIONES IMPORTANTES:</strong><br>
+                        <strong>INSTRUCCIONES:</strong><br>
                         1. Copia este código<br>
-                        2. Abre la app <strong>SpayCine</strong><br>
+                        2. Abre la app <strong>SpayCineHD</strong><br>
                         3. Ve a "Canjear Código"<br>
                         4. Pega el código y activa<br>
                         ⚠️ <strong>SOLO SE PUEDE USAR UNA VEZ</strong>
@@ -158,14 +158,14 @@
             </div>
         </div>
 
-        <!-- Footer de seguridad -->
+        <!-- Footer -->
         <footer class="security-footer">
-            <p>🔐 <strong>Protegido por:</strong> SSL/TLS • CSP • Firebase Security Rules • PayPal Protection</p>
-            <p>© 2024 App-SpayCine Premium. Todos los derechos reservados.</p>
+            <p>🔐 <strong>Protegido por:</strong> SSL/TLS • CSP • Firebase • PayPal Protection</p>
+            <p>© 2024 SpayCineHD Premium. Todos los derechos reservados.</p>
         </footer>
     </div>
 
-    <!-- Scripts locales -->
+    <!-- Scripts -->
     <script src="firebase-config.js" defer></script>
     <script src="script.js" defer></script>
 </body>
