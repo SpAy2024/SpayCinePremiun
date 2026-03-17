@@ -20,26 +20,11 @@
 ">
     
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-    <meta http-equiv="Permissions-Policy" content="
-        geolocation=(), 
-        microphone=(), 
-        camera=(), 
-        payment=(self https://www.paypal.com),
-        interest-cohort=()
-    ">
-    
-    <!-- Prevención de ataques XSS -->
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), payment=(self https://www.paypal.com), interest-cohort=()">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    
-    <!-- Control de recursos externos -->
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-    
-    <!-- Prevención de telefonos móviles -->
     <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
-    
-    <!-- Cache seguro -->
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -47,13 +32,10 @@
     <title>App-SpayCine Premium</title>
     <link rel="stylesheet" href="styles.css">
     
-    <!-- Carga segura de scripts externos -->
-    <!-- Reemplaza la línea actual de PayPal con esta versión corregida -->
-<!-- REEMPLAZA el script de PayPal ACTUAL con este -->
-<script src="https://www.paypal.com/sdk/js?client-id=AeEPwhSoPP3YNeFd87QAqNO8UQG8Xd69cw4TcNnBYLmt9KD2S3Spt9a2JNr7Nj3mtuVaQuEQUCxK719_&vault=true&intent=subscription" 
-        data-sdk-integration-source="button-factory"
-        defer 
-        crossorigin="anonymous"></script>
+    <!-- SOLO UN SCRIPT DE PAYPAL - con TU client-id CORRECTO -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AeEPwhSoPP3YNeFd87QAqNO8UQG8Xd69cw4TcNnBYLmt9KD2S3Spt9a2JNr7Nj3mtuVaQuEQUCxK719_&vault=true&intent=subscription&components=buttons&enable-funding=card" 
+            defer 
+            crossorigin="anonymous"></script>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" 
             defer 
@@ -74,7 +56,7 @@
         </header>
 
         <div class="plans-container">
-            <!-- Plan 1 Mes -->
+            <!-- Plan 1 Mes - CON ID CORRECTO -->
             <div class="plan-card" data-plan="mensual">
                 <div class="plan-header">
                     <h3>1 MES</h3>
@@ -83,14 +65,14 @@
                 <div class="plan-features">
                     <ul>
                         <li>✅ Disfruta sin anuncios</li>
-                    
+                        <li>✅ Acceso premium completo</li>
                     </ul>
                 </div>
-                <!-- Botón PayPal 1 Mes -->
-                <div id="paypal-button-container-P-18381349AF867540CNEVSH5I" class="paypal-button-wrapper"></div>
+                <!-- Botón PayPal 1 Mes con ID CORRECTO -->
+                <div id="paypal-button-container-P-2UR88313VV523743JNG4WMAQ" class="paypal-button-wrapper"></div>
             </div>
 
-            <!-- Plan 3 Meses -->
+            <!-- Plan 3 Meses - CON ID CORRECTO -->
             <div class="plan-card popular" data-plan="3meses">
                 <div class="popular-badge">MÁS POPULAR</div>
                 <div class="plan-header">
@@ -101,14 +83,15 @@
                 <div class="plan-features">
                     <ul>
                         <li>✅ Disfruta sin anuncios</li>
-                       
+                        <li>✅ Acceso premium completo</li>
+                        <li>✅ 20% de ahorro</li>
                     </ul>
                 </div>
-                <!-- Botón PayPal 3 Meses -->
-                <div id="paypal-button-container-P-5PP81994FM215525RNEVSJFA" class="paypal-button-wrapper"></div>
+                <!-- Botón PayPal 3 Meses con ID CORRECTO -->
+                <div id="paypal-button-container-P-65Y77926TJ7680700NG4WOJI" class="paypal-button-wrapper"></div>
             </div>
 
-            <!-- Plan 1 Año -->
+            <!-- Plan 1 Año - CON ID CORRECTO -->
             <div class="plan-card" data-plan="year">
                 <div class="plan-header">
                     <h3>1 AÑO</h3>
@@ -118,11 +101,12 @@
                 <div class="plan-features">
                     <ul>
                         <li>✅ Disfruta sin anuncios</li>
-                        
+                        <li>✅ Acceso premium completo</li>
+                        <li>✅ 40% de ahorro</li>
                     </ul>
                 </div>
-                <!-- Botón PayPal 1 Año -->
-                <div id="paypal-button-container-P-3E203769WC9540323NEVSJ5Q" class="paypal-button-wrapper"></div>
+                <!-- Botón PayPal 1 Año con ID CORRECTO -->
+                <div id="paypal-button-container-P-94K64420E70610916NG4WPKQ" class="paypal-button-wrapper"></div>
             </div>
         </div>
 
@@ -151,14 +135,14 @@
                         <ul>
                             <li>✅ Código generado con criptografía segura</li>
                             <li>✅ Válido por única vez</li>
-                            <li>✅ Registrado con timestamp y IP</li>
+                            <li>✅ Registrado en Firebase</li>
                             <li>⏱️ Código visible por 5 minutos</li>
                         </ul>
                     </div>
                     <p class="code-instructions">
                         <strong>INSTRUCCIONES IMPORTANTES:</strong><br>
                         1. Copia este código<br>
-                        2. Abre la app <strong>App-Animes</strong><br>
+                        2. Abre la app <strong>SpayCine</strong><br>
                         3. Ve a "Canjear Código"<br>
                         4. Pega el código y activa<br>
                         ⚠️ <strong>SOLO SE PUEDE USAR UNA VEZ</strong>
