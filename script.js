@@ -1,4 +1,4 @@
-// script.js - Versión ultra simplificada que funciona
+// script.js - Versión actualizada con generación de códigos según plan
 (function() {
     'use strict';
     
@@ -8,21 +8,24 @@
             name: '1 Mes',
             price: '$2.99',
             days: 30,
-            paypalId: 'P-18381349AF867540CNEVSH5I',
+            type: 'mensual',
+            paypalId: 'P-2UR88313VV523743JNG4WMAQ',
             containerId: 'paypal-button-container-P-18381349AF867540CNEVSH5I'
         },
         '3meses': {
             name: '3 Meses', 
-            price: '$7.99',
+            price: '$6.99',
             days: 90,
-            paypalId: 'P-5PP81994FM215525RNEVSJFA',
+            type: '3meses',
+            paypalId: 'P-65Y77926TJ7680700NG4WOJI',
             containerId: 'paypal-button-container-P-5PP81994FM215525RNEVSJFA'
         },
         'year': {
             name: '1 Año',
             price: '$24.99', 
             days: 365,
-            paypalId: 'P-3E203769WC9540323NEVSJ5Q',
+            type: 'year',
+            paypalId: 'P-94K64420E70610916NG4WPKQ',
             containerId: 'paypal-button-container-P-3E203769WC9540323NEVSJ5Q'
         }
     };
@@ -64,16 +67,21 @@
                     onApprove: function(data, actions) {
                         console.log('✅ Pago aprobado:', data.subscriptionID);
                         
-                        // Generar código INMEDIATAMENTE
-                        const code = generateCode(planType);
+                        // Generar código según el plan
+                        const code = generateCode(planConfig.type);
                         
-                        // MOSTRAR CÓDIGO INMEDIATAMENTE
-                        showCode(code, planConfig);
-                        
-                        // Intentar guardar en Firebase (en segundo plano)
-                        saveCodeToFirebase(code, planType, data.subscriptionID, planConfig)
-                            .then(() => console.log('✅ Código guardado'))
-                            .catch(err => console.log('⚠️ Firebase offline, código guardado localmente'));
+                        // Guardar en Firebase con la estructura requerida
+                        saveCodeToFirebase(code, planConfig, data.subscriptionID)
+                            .then(() => {
+                                console.log('✅ Código guardado en Firebase');
+                                // Mostrar código al usuario
+                                showCode(code, planConfig);
+                            })
+                            .catch(error => {
+                                console.error('Error guardando en Firebase:', error);
+                                // Aún así mostrar el código al usuario
+                                showCode(code, planConfig, true);
+                            });
                     },
                     
                     onError: function(err) {
@@ -102,183 +110,177 @@
         });
     }
     
-    // ===== FUNCIONES PARA CÓDIGOS =====
-    
+    // ===== FUNCIÓN PARA GENERAR CÓDIGO =====
     function generateCode(planType) {
-        const date = new Date();
-        const year = date.getFullYear().toString().slice(-2);
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-        const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const random2 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        // Caracteres permitidos (mayúsculas y números)
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
         
-        const prefixes = {
-            'mensual': 'ANM',
-            '3meses': 'AN3',
-            'year': 'ANY'
-        };
+        // Generar código de 7 caracteres (como en tu ejemplo: ABC123, AVS1986, SPAYCINE6)
+        // Para SPAYCINE6 son 9 caracteres, así que haremos variable
+        let length = 7;
         
-        const prefix = prefixes[planType] || 'ANC';
-        return `${prefix}${year}${month}${day}-${random}-${random2}`;
+        // Para el plan anual podemos hacerlo más largo como en tu ejemplo
+        if (planType === 'year') {
+            length = 9; // SPAYCINE6 tiene 9 caracteres
+        }
+        
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * chars.length);
+            code += chars[randomIndex];
+        }
+        
+        // Asegurar que no comience con número (opcional)
+        if (code.match(/^[0-9]/)) {
+            // Reemplazar el primer carácter con una letra si es número
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            code = letters.charAt(Math.floor(Math.random() * letters.length)) + code.substring(1);
+        }
+        
+        console.log(`Código generado para ${planType}: ${code}`);
+        return code;
     }
     
-    async function saveCodeToFirebase(code, planType, subscriptionId, planConfig) {
-        // Intentar Firebase
+    // ===== FUNCIÓN PARA GUARDAR EN FIREBASE =====
+    async function saveCodeToFirebase(code, planConfig, subscriptionId) {
+        // Intentar guardar en Firebase
         if (window.firebaseDB && window.firebaseDB.saveCode) {
             try {
-                await window.firebaseDB.saveCode(code, planType, subscriptionId, planConfig);
+                await window.firebaseDB.saveCode(code, planConfig, subscriptionId);
                 return true;
             } catch (e) {
-                console.log('Firebase error, guardando local');
+                console.error('Error en Firebase:', e);
+                throw e;
             }
+        } else {
+            throw new Error('Firebase no disponible');
         }
-        
-        // Guardar localmente
-        const saved = JSON.parse(localStorage.getItem('premiumCodes') || '[]');
-        saved.push({
-            code: code,
-            plan: planConfig.name,
-            date: new Date().toISOString(),
-            subscriptionId: subscriptionId
-        });
-        localStorage.setItem('premiumCodes', JSON.stringify(saved));
-        return true;
     }
     
-    // ===== FUNCIONES UI =====
-    
-    function showCode(code, planConfig) {
+    // ===== FUNCIÓN PARA MOSTRAR CÓDIGO =====
+    function showCode(code, planConfig, offline = false) {
         console.log('🎫 Mostrando código:', code);
         
-        // Buscar o crear modal
-        let modal = document.getElementById('codeModal');
-        
-        if (!modal) {
-            // Crear modal si no existe
-            modal = document.createElement('div');
-            modal.id = 'codeModal';
-            modal.innerHTML = `
-                <div style="
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.9);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 10000;
-                ">
-                    <div style="
-                        background: white;
-                        padding: 30px;
-                        border-radius: 15px;
-                        max-width: 500px;
-                        width: 90%;
-                        text-align: center;
-                        position: relative;
-                        animation: slideIn 0.3s ease;
-                    ">
-                        <span onclick="this.parentElement.parentElement.parentElement.remove()" style="
-                            position: absolute;
-                            right: 15px;
-                            top: 10px;
-                            font-size: 28px;
-                            cursor: pointer;
-                        ">&times;</span>
-                        
-                        <h2 style="color: #4ecdc4; margin-bottom: 20px;">🎉 ¡Suscripción Exitosa!</h2>
-                        
-                        <div id="codeDisplay" style="
-                            background: #f5f5f5;
-                            padding: 20px;
-                            border-radius: 10px;
-                            font-family: monospace;
-                            font-size: 24px;
-                            letter-spacing: 2px;
-                            margin: 20px 0;
-                            border: 2px dashed #4ecdc4;
-                            user-select: all;
-                        ">${code}</div>
-                        
-                        <div id="planInfo" style="margin: 15px 0; padding: 15px; background: #e8f5e9; border-radius: 10px;">
-                            <p><strong>Plan:</strong> ${planConfig.name}</p>
-                            <p><strong>Precio:</strong> ${planConfig.price}</p>
-                            <p><strong>Duración:</strong> ${planConfig.days} días</p>
-                        </div>
-                        
-                        <div style="margin: 20px 0; padding: 15px; background: #fff3cd; border-radius: 10px; text-align: left;">
-                            <p style="color: #856404;"><strong>📱 INSTRUCCIONES:</strong></p>
-                            <ol style="color: #856404; margin-left: 20px;">
-                                <li>Copia este código</li>
-                                <li>Abre la app App-Animes</li>
-                                <li>Ve a "Canjear Código"</li>
-                                <li>Pega el código y activa</li>
-                            </ol>
-                        </div>
-                        
-                        <div style="display: flex; gap: 10px; justify-content: center;">
-                            <button onclick="copyCode('${code}')" style="
-                                background: #4ecdc4;
-                                color: white;
-                                border: none;
-                                padding: 12px 30px;
-                                border-radius: 10px;
-                                font-size: 16px;
-                                cursor: pointer;
-                                flex: 1;
-                            ">📋 Copiar Código</button>
-                            
-                            <button onclick="this.closest('#codeModal').remove()" style="
-                                background: #95a5a6;
-                                color: white;
-                                border: none;
-                                padding: 12px 30px;
-                                border-radius: 10px;
-                                font-size: 16px;
-                                cursor: pointer;
-                            ">✅ Cerrar</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            
-            // Añadir animación
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideIn {
-                    from { transform: translateY(-100px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-            `;
-            document.head.appendChild(style);
-        } else {
-            // Actualizar modal existente
-            modal.querySelector('#codeDisplay').textContent = code;
-            modal.querySelector('#planInfo').innerHTML = `
-                <p><strong>Plan:</strong> ${planConfig.name}</p>
-                <p><strong>Precio:</strong> ${planConfig.price}</p>
-                <p><strong>Duración:</strong> ${planConfig.days} días</p>
-            `;
-            modal.style.display = 'flex';
+        // Eliminar modal existente si hay
+        const existingModal = document.getElementById('codeModal');
+        if (existingModal) {
+            existingModal.remove();
         }
         
-        // Hacer función de copia global
-        window.copyCode = function(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('✅ Código copiado al portapapeles');
-            }).catch(() => {
-                prompt('Copia este código:', text);
-            });
+        // Crear modal
+        const modal = document.createElement('div');
+        modal.id = 'codeModal';
+        modal.className = 'modal';
+        
+        // Determinar el tipo de plan para mostrar
+        let planTypeText = '';
+        switch(planConfig.type) {
+            case 'mensual':
+                planTypeText = 'Mensual';
+                break;
+            case '3meses':
+                planTypeText = '3 Meses';
+                break;
+            case 'year':
+                planTypeText = 'Anual';
+                break;
+            default:
+                planTypeText = planConfig.name;
+        }
+        
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>🎉 ¡Suscripción Exitosa!</h2>
+                <div class="code-container">
+                    <p>Tu código premium es:</p>
+                    <div class="premium-code" id="premiumCodeDisplay">${code}</div>
+                    
+                    <div class="plan-info">
+                        <p><strong>Plan:</strong> ${planConfig.name}</p>
+                        <p><strong>Tipo:</strong> ${planTypeText}</p>
+                        <p><strong>Precio:</strong> ${planConfig.price}</p>
+                        <p><strong>Duración:</strong> ${planConfig.days} días</p>
+                    </div>
+                    
+                    ${offline ? '<div class="offline-warning">⚠️ Código guardado localmente - Conéctate a internet para sincronizar</div>' : ''}
+                    
+                    <div class="security-warning">
+                        <p>⚠️ <strong>IMPORTANTE:</strong></p>
+                        <ul>
+                            <li>✅ Código válido por única vez</li>
+                            <li>✅ No compartas este código</li>
+                            <li>✅ Guardado en Firebase</li>
+                        </ul>
+                    </div>
+                    
+                    <p class="code-instructions">
+                        <strong>INSTRUCCIONES:</strong><br>
+                        1. Copia este código<br>
+                        2. Abre la app SpayCine<br>
+                        3. Ve a "Canjear Código"<br>
+                        4. Pega el código y activa<br>
+                    </p>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button class="copy-btn" onclick="copyCodeToClipboard('${code}')">
+                        📋 Copiar Código
+                    </button>
+                    <button class="close-btn" onclick="closeCodeModal()">
+                        ✅ Entendido
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Mostrar modal
+        setTimeout(() => {
+            modal.style.display = 'block';
+        }, 100);
+        
+        // Configurar botón de cerrar
+        const closeBtn = modal.querySelector('.close');
+        closeBtn.onclick = function() {
+            modal.remove();
+        };
+        
+        // Cerrar al hacer clic fuera
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                modal.remove();
+            }
         };
     }
     
-    // ===== INICIALIZACIÓN =====
+    // ===== FUNCIONES GLOBALES PARA EL MODAL =====
+    window.copyCodeToClipboard = function(code) {
+        navigator.clipboard.writeText(code).then(() => {
+            alert('✅ Código copiado al portapapeles');
+        }).catch(() => {
+            // Fallback para móviles
+            const textarea = document.createElement('textarea');
+            textarea.value = code;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('✅ Código copiado al portapapeles');
+        });
+    };
     
+    window.closeCodeModal = function() {
+        const modal = document.getElementById('codeModal');
+        if (modal) {
+            modal.remove();
+        }
+    };
+    
+    // ===== INICIALIZACIÓN =====
     function initialize() {
-        console.log('🚀 Iniciando...');
+        console.log('🚀 Iniciando sistema de pagos...');
         
         // Verificar PayPal cada segundo
         let attempts = 0;
@@ -289,7 +291,12 @@
                 setTimeout(initializePayPalButtons, 500);
             } else if (attempts++ > 15) {
                 clearInterval(checkPayPal);
-                console.log('⚠️ PayPal timeout');
+                console.log('⚠️ PayPal timeout - Recargando página...');
+                // Mostrar mensaje de error
+                const containers = document.querySelectorAll('.paypal-button-wrapper');
+                containers.forEach(container => {
+                    container.innerHTML = '<p style="color:red;">Error cargando PayPal. Recarga la página.</p>';
+                });
             }
         }, 1000);
         
@@ -302,7 +309,7 @@
         });
     }
     
-    // Iniciar
+    // Iniciar cuando el DOM esté listo
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initialize);
     } else {
