@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 🔒 HEADERS DE SEGURIDAD -->
+    <!-- 🔒 HEADERS DE SEGURIDAD CORREGIDOS -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
         script-src 'self' https://www.paypal.com https://www.paypalobjects.com https://www.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app 'unsafe-inline' 'unsafe-eval';
@@ -21,7 +21,8 @@
     
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), payment=(self https://www.paypal.com), interest-cohort=()">
+    <!-- ✅ PERMISSIONS POLICY CORREGIDA - Ahora permite clipboard -->
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), clipboard-read=(self), clipboard-write=(self), payment=(self https://www.paypal.com), interest-cohort=()">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
@@ -32,18 +33,15 @@
     <title>SpayCineHD Premium</title>
     <link rel="stylesheet" href="styles.css">
     
-    <!-- PAYPAL PRODUCCIÓN - CON TU CLIENT ID REAL -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AZvnJPiVmaNSVR9poxUcahUcVibipdpEr7IA5IhsDpz8NWzer8SiwQ_l8y0rvk1IJVvRQUsGWNPs-dmh&vault=true&intent=subscription&components=buttons&enable-funding=card" 
-            defer 
+    <!-- PAYPAL SDK - Cargado una sola vez -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AdKeDj6pGfzL4OKwlqMCS3mcVpfSJMifWgHajHG7c2JAX3IAiLhJ5jIcHGX2uWKFCc5ftaVzdbVjAHZN&vault=true&intent=subscription&components=buttons&enable-funding=card" 
             crossorigin="anonymous"></script>
     
     <!-- FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" 
-            defer 
             crossorigin="anonymous"></script>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js" 
-            defer 
             crossorigin="anonymous"></script>
 </head>
 <body>
@@ -69,8 +67,7 @@
                         <li>✅ Acceso premium completo</li>
                     </ul>
                 </div>
-                <!-- Botón PayPal 1 Mes -->
-                <div id="paypal-button-container-P-2UR88313VV523743JNG4WMAQ" class="paypal-button-wrapper"></div>
+                <div id="paypal-button-container-P-8BB868295F130251WNHJMHOI" class="paypal-button-wrapper"></div>
             </div>
 
             <!-- Plan 3 Meses -->
@@ -88,8 +85,7 @@
                         <li>✅ 20% de ahorro</li>
                     </ul>
                 </div>
-                <!-- Botón PayPal 3 Meses -->
-                <div id="paypal-button-container-P-65Y77926TJ7680700NG4WOJI" class="paypal-button-wrapper"></div>
+                <div id="paypal-button-container-P-5PP81994FM215525RNEVSJFA" class="paypal-button-wrapper"></div>
             </div>
 
             <!-- Plan 1 Año -->
@@ -106,8 +102,7 @@
                         <li>✅ 40% de ahorro</li>
                     </ul>
                 </div>
-                <!-- Botón PayPal 1 Año -->
-                <div id="paypal-button-container-P-94K64420E70610916NG4WPKQ" class="paypal-button-wrapper"></div>
+                <div id="paypal-button-container-P-3E203769WC9540323NEVSJ5Q" class="paypal-button-wrapper"></div>
             </div>
         </div>
 
@@ -166,7 +161,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="firebase-config.js" defer></script>
-    <script src="script.js" defer></script>
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
