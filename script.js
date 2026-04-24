@@ -1,14 +1,14 @@
 (function() {
     'use strict';
 
-    // Configuración de planes con los NUEVOS IDs
+    // Configuración de planes con los NUEVOS IDs de SpayCineFHD
     const PLANS = {
         mensual: {
             name: '1 Mes',
             price: 2.99,
             priceFormatted: '$2.99',
             days: 30,
-            plan_id: 'P-2UR88313VV523743JNG4WMAQ',  // ✅ NUEVO ID
+            plan_id: 'P-18381349AF867540CNEVSH5I',  // ✅ NUEVO ID
             prefix: 'M'
         },
         '3meses': {
@@ -16,7 +16,7 @@
             price: 7.99,
             priceFormatted: '$7.99',
             days: 90,
-            plan_id: 'P-65Y77926TJ7680700NG4WOJI',  // ✅ NUEVO ID
+            plan_id: 'P-5PP81994FM215525RNEVSJFA',  // ✅ NUEVO ID
             prefix: 'T'
         },
         year: {
@@ -24,12 +24,12 @@
             price: 24.99,
             priceFormatted: '$24.99',
             days: 365,
-            plan_id: 'P-94K64420E70610916NG4WPKQ',  // ✅ NUEVO ID
+            plan_id: 'P-3E203769WC9540323NEVSJ5Q',  // ✅ NUEVO ID
             prefix: 'Y'
         }
     };
 
-    console.log('🚀 SpayCineHD Premium - Planes actualizados');
+    console.log('🚀 SpayCineFHD Premium - Planes actualizados');
     console.log('Plan Mensual ID:', PLANS.mensual.plan_id);
     console.log('Plan Trimestral ID:', PLANS['3meses'].plan_id);
     console.log('Plan Anual ID:', PLANS.year.plan_id);
@@ -60,7 +60,8 @@
             price: plan.price,
             subscriptionId: subscriptionId,
             createdAt: firebase.database.ServerValue.TIMESTAMP,
-            status: 'active'
+            status: 'active',
+            isUsed: false
         };
         
         try {
