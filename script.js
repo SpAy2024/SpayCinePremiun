@@ -1,15 +1,14 @@
-// script.js - Versión final con PayPal + Firebase
 (function() {
     'use strict';
 
-    // Planes con sus IDs de PayPal
+    // Configuración de planes con los NUEVOS IDs
     const PLANS = {
         mensual: {
             name: '1 Mes',
             price: 2.99,
             priceFormatted: '$2.99',
             days: 30,
-            plan_id: 'P-18381349AF867540CNEVSH5I',
+            plan_id: 'P-2UR88313VV523743JNG4WMAQ',  // ✅ NUEVO ID
             prefix: 'M'
         },
         '3meses': {
@@ -17,7 +16,7 @@
             price: 7.99,
             priceFormatted: '$7.99',
             days: 90,
-            plan_id: 'P-5PP81994FM215525RNEVSJFA',
+            plan_id: 'P-65Y77926TJ7680700NG4WOJI',  // ✅ NUEVO ID
             prefix: 'T'
         },
         year: {
@@ -25,14 +24,17 @@
             price: 24.99,
             priceFormatted: '$24.99',
             days: 365,
-            plan_id: 'P-3E203769WC9540323NEVSJ5Q',
+            plan_id: 'P-94K64420E70610916NG4WPKQ',  // ✅ NUEVO ID
             prefix: 'Y'
         }
     };
 
-    console.log('🚀 SpayCineHD Premium - Iniciando...');
+    console.log('🚀 SpayCineHD Premium - Planes actualizados');
+    console.log('Plan Mensual ID:', PLANS.mensual.plan_id);
+    console.log('Plan Trimestral ID:', PLANS['3meses'].plan_id);
+    console.log('Plan Anual ID:', PLANS.year.plan_id);
 
-    // Generar código único
+    // Generar código premium
     function generateCode(planType) {
         const plan = PLANS[planType];
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -43,10 +45,14 @@
         return code;
     }
 
-    // Guardar en Firebase
-    async function saveSubscription(code, planType, subscriptionId, email = null) {
-        const plan = PLANS[planType];
+    // Guardar en Firebase (si está disponible)
+    async function saveToFirebase(code, planType, subscriptionId) {
+        if (!window.firebaseDB) {
+            console.log('Firebase no disponible, guardando localmente');
+            return false;
+        }
         
+        const plan = PLANS[planType];
         const subscriptionData = {
             code: code,
             plan: plan.name,
@@ -54,130 +60,129 @@
             price: plan.price,
             subscriptionId: subscriptionId,
             createdAt: firebase.database.ServerValue.TIMESTAMP,
-            status: 'active',
-            isUsed: false
+            status: 'active'
         };
         
         try {
-            // Guardar en ActivationCodes
             await window.firebaseDB.ref('ActivationCodes/' + code).set(subscriptionData);
-            
-            // Guardar en Transactions
-            await window.firebaseDB.ref('Transactions/' + subscriptionId).set({
-                ...subscriptionData,
-                email: email || 'pending@webhook.com'
-            });
-            
-            console.log('✅ Suscripción guardada en Firebase');
-            
-            // Llamar al webhook (Cloud Function)
-            if (typeof window.callPayPalWebhook === 'function') {
-                await window.callPayPalWebhook({
-                    subscription_id: subscriptionId,
-                    plan_id: plan.plan_id,
-                    plan_name: plan.name,
-                    code: code,
-                    amount: plan.price,
-                    status: 'ACTIVE',
-                    event_type: 'PAYPAL.SUBSCRIPTION.ACTIVATED'
-                });
-            }
-            
+            await window.firebaseDB.ref('Transactions/' + subscriptionId).set(subscriptionData);
+            console.log('✅ Datos guardados en Firebase');
             return true;
         } catch (error) {
-            console.error('❌ Error guardando:', error);
+            console.error('Error guardando en Firebase:', error);
             return false;
         }
     }
 
-    // Mostrar modal
-    function showModal(code, planType) {
+    // Mostrar modal con código
+    function showCodeModal(code, planType) {
         const plan = PLANS[planType];
         const modal = document.getElementById('codeModal');
+        if (!modal) return;
         
         document.getElementById('premiumCode').textContent = code;
         document.getElementById('planInfo').innerHTML = `
             <p><strong>Plan:</strong> ${plan.name}</p>
             <p><strong>Precio:</strong> ${plan.priceFormatted}</p>
             <p><strong>Duración:</strong> ${plan.days} días</p>
-            <p style="color: #4caf50; margin-top: 10px;">✅ Suscripción activada correctamente</p>
-            <p style="color: #ff9800; font-size: 0.9em;">⚠️ Guarda este código para activar tu cuenta en la app</p>
+            <p style="color: #4caf50;">✅ Suscripción activada correctamente</p>
+            <p style="color: #ff9800;">⚠️ Guarda este código para activar en la app</p>
         `;
         
         modal.style.display = 'block';
         
-        // Botón copiar
-        document.getElementById('copyCode').onclick = async () => {
-            try {
-                await navigator.clipboard.writeText(code);
-                alert('✅ Código copiado al portapapeles');
-            } catch (err) {
-                alert('❌ Copia manual: Selecciona el código y presiona Ctrl+C');
-            }
+        document.getElementById('copyCode').onclick = () => {
+            navigator.clipboard.writeText(code);
+            alert('✅ Código copiado');
         };
         
-        // Botón cerrar
         document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
         document.querySelector('.close').onclick = () => modal.style.display = 'none';
         
-        // Cierre automático a los 60 segundos
         setTimeout(() => modal.style.display = 'none', 60000);
     }
 
-    // Inicializar botones PayPal
-    function initPayPal() {
+    // Inicializar botones de PayPal
+    function initPayPalButtons() {
         if (typeof paypal === 'undefined') {
             console.log('⏳ Esperando PayPal SDK...');
-            setTimeout(initPayPal, 500);
+            setTimeout(initPayPalButtons, 500);
             return;
         }
         
         console.log('✅ PayPal SDK cargado');
         
-        Object.keys(PLANS).forEach(planType => {
-            const plan = PLANS[planType];
-            const container = document.getElementById(`paypal-button-container-${planType}`);
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
+        // Plan Mensual
+        if (document.getElementById('paypal-button-container-mensual')) {
             paypal.Buttons({
                 style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
-                
-                createSubscription: (data, actions) => {
-                    console.log(`💳 Creando suscripción: ${plan.name}`);
-                    return actions.subscription.create({ plan_id: plan.plan_id });
+                createSubscription: function(data, actions) {
+                    console.log('💳 Creando suscripción: 1 Mes');
+                    return actions.subscription.create({ plan_id: PLANS.mensual.plan_id });
                 },
-                
-                onApprove: async (data) => {
-                    console.log(`✅ Suscripción aprobada:`, data);
-                    
-                    const code = generateCode(planType);
-                    await saveSubscription(code, planType, data.subscriptionID);
-                    showModal(code, planType);
-                    
-                    alert(`🎉 ¡Suscripción exitosa!\n\nPlan: ${plan.name}\nCódigo: ${code}\n\nGuarda este código para activar tu cuenta.`);
+                onApprove: async function(data) {
+                    console.log('✅ Suscripción 1 Mes aprobada:', data.subscriptionID);
+                    const code = generateCode('mensual');
+                    await saveToFirebase(code, 'mensual', data.subscriptionID);
+                    showCodeModal(code, 'mensual');
+                    alert(`🎉 ¡Suscripción exitosa!\n\nPlan: 1 Mes\nCódigo: ${code}`);
                 },
-                
-                onError: (err) => {
-                    console.error(`❌ Error en ${plan.name}:`, err);
-                    alert('Error al procesar el pago. Por favor intenta de nuevo.');
+                onError: function(err) {
+                    console.error('Error en plan mensual:', err);
+                    alert('Error al procesar el pago. Intenta de nuevo.');
                 }
-                
-            }).render(`#paypal-button-container-${planType}`);
-        });
-    }
-    
-    // Esperar Firebase y luego iniciar PayPal
-    function waitForFirebase() {
-        if (window.firebaseDB) {
-            console.log('✅ Firebase listo');
-            initPayPal();
-        } else {
-            console.log('⏳ Esperando Firebase...');
-            setTimeout(waitForFirebase, 300);
+            }).render('#paypal-button-container-mensual');
+        }
+        
+        // Plan 3 Meses
+        if (document.getElementById('paypal-button-container-3meses')) {
+            paypal.Buttons({
+                style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
+                createSubscription: function(data, actions) {
+                    console.log('💳 Creando suscripción: 3 Meses');
+                    return actions.subscription.create({ plan_id: PLANS['3meses'].plan_id });
+                },
+                onApprove: async function(data) {
+                    console.log('✅ Suscripción 3 Meses aprobada:', data.subscriptionID);
+                    const code = generateCode('3meses');
+                    await saveToFirebase(code, '3meses', data.subscriptionID);
+                    showCodeModal(code, '3meses');
+                    alert(`🎉 ¡Suscripción exitosa!\n\nPlan: 3 Meses\nCódigo: ${code}`);
+                },
+                onError: function(err) {
+                    console.error('Error en plan 3 meses:', err);
+                    alert('Error al procesar el pago. Intenta de nuevo.');
+                }
+            }).render('#paypal-button-container-3meses');
+        }
+        
+        // Plan 1 Año
+        if (document.getElementById('paypal-button-container-year')) {
+            paypal.Buttons({
+                style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
+                createSubscription: function(data, actions) {
+                    console.log('💳 Creando suscripción: 1 Año');
+                    return actions.subscription.create({ plan_id: PLANS.year.plan_id });
+                },
+                onApprove: async function(data) {
+                    console.log('✅ Suscripción 1 Año aprobada:', data.subscriptionID);
+                    const code = generateCode('year');
+                    await saveToFirebase(code, 'year', data.subscriptionID);
+                    showCodeModal(code, 'year');
+                    alert(`🎉 ¡Suscripción exitosa!\n\nPlan: 1 Año\nCódigo: ${code}`);
+                },
+                onError: function(err) {
+                    console.error('Error en plan anual:', err);
+                    alert('Error al procesar el pago. Intenta de nuevo.');
+                }
+            }).render('#paypal-button-container-year');
         }
     }
     
-    waitForFirebase();
+    // Inicializar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPayPalButtons);
+    } else {
+        initPayPalButtons();
+    }
 })();
