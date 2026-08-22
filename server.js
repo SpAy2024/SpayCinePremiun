@@ -115,8 +115,12 @@ app.post('/api/create-subscription', async (req, res) => {
                 application_context: {
                     brand_name: 'SpayCineFHD',
                     user_action: 'SUBSCRIBE_NOW',
-                    return_url: `${req.protocol}://${req.get('host')}/subscription-return?planType=${planType}`,
-                    cancel_url: `${req.protocol}://${req.get('host')}/subscription-cancel`
+                    // Forzamos https explícito: Render termina el TLS antes de
+                    // llegar a Express, así que req.protocol suele devolver
+                    // 'http' aunque el sitio real sea https. PayPal rechaza
+                    // return_url/cancel_url que no sean https.
+                    return_url: `https://${req.get('host')}/subscription-return?planType=${planType}`,
+                    cancel_url: `https://${req.get('host')}/subscription-cancel`
                 }
             })
         });
@@ -124,8 +128,9 @@ app.post('/api/create-subscription', async (req, res) => {
         const data = await response.json();
 
         if (!response.ok) {
-            console.error('Error creando suscripción en PayPal:', data);
-            return res.status(502).json({ error: 'No se pudo crear la suscripción con PayPal' });
+            console.error('Error creando suscripción en PayPal:', JSON.stringify(data));
+            const detail = data.details?.[0]?.description || data.message || 'motivo desconocido';
+            return res.status(502).json({ error: `No se pudo crear la suscripción con PayPal: ${detail}` });
         }
 
         const approveLink = (data.links || []).find(l => l.rel === 'approve');
