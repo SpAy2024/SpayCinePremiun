@@ -11,7 +11,7 @@
     };
 
     // Cambia esto por la URL real de tu backend en Render
-    const API_BASE = 'https://TU-SERVIDOR.onrender.com';
+    const API_BASE = 'https://spaycinepremiun-w0at.onrender.com';
 
     console.log('🚀 SpayCineFHD Premium - Planes cargados');
 
