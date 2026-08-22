@@ -4,92 +4,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpayCineFHD Premium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="filmstrip filmstrip--top" aria-hidden="true"></div>
+
     <div class="container">
         <header>
-            <div class="logo">
-                <h1>SpayCineFHD</h1>
-                <div class="security-badge">🔒 Pagos Seguros con PayPal</div>
-            </div>
-            <p class="subtitle">Sin anuncios • Descargas • Soporte prioritario</p>
+            <p class="eyebrow">Función continua · Sin cortes</p>
+            <h1 class="logo">SpayCine<span>FHD</span></h1>
+            <p class="subtitle">Sin anuncios &nbsp;·&nbsp; Descargas &nbsp;·&nbsp; Soporte prioritario</p>
+            <div class="security-badge">🔒&nbsp; Pagos seguros con PayPal</div>
         </header>
 
         <div class="plans-container">
             <!-- Plan 1 Mes -->
-            <div class="plan-card" data-plan="mensual">
-                <div class="plan-header">
-                    <h3>1 MES</h3>
-                    <div class="price">$2.99<span>/mes</span></div>
+            <div class="ticket" data-plan="mensual">
+                <div class="ticket__main">
+                    <p class="ticket__label">Boleto de entrada</p>
+                    <h3 class="ticket__title">1 Mes</h3>
+                    <div class="ticket__price">$2.99<span>&nbsp;/ mes</span></div>
+                    <ul class="ticket__features">
+                        <li>Sin anuncios</li>
+                        <li>Acceso premium</li>
+                        <li>Descargas ilimitadas</li>
+                    </ul>
                 </div>
-                <div class="plan-features">
-                    <ul><li>✅ Sin anuncios</li><li>✅ Acceso premium</li><li>✅ Descargas ilimitadas</li></ul>
+                <div class="ticket__perforation" aria-hidden="true"></div>
+                <div class="ticket__stub">
+                    <p class="ticket__stub-code">ADMIT&nbsp;·&nbsp;30D</p>
+                    <div id="paypal-button-container-mensual"></div>
                 </div>
-                <div id="paypal-button-container-mensual"></div>
             </div>
 
             <!-- Plan 3 Meses -->
-            <div class="plan-card popular" data-plan="3meses">
-                <div class="popular-badge">MÁS POPULAR</div>
-                <div class="plan-header">
-                    <h3>3 MESES</h3>
-                    <div class="price">$7.99<span>/3 meses</span></div>
-                    <div class="savings">Ahorras 20%</div>
+            <div class="ticket ticket--popular" data-plan="3meses">
+                <div class="ticket__badge">Más popular</div>
+                <div class="ticket__main">
+                    <p class="ticket__label">Boleto de entrada</p>
+                    <h3 class="ticket__title">3 Meses</h3>
+                    <div class="ticket__price">$7.99<span>&nbsp;/ 3 meses</span></div>
+                    <p class="ticket__savings">Ahorras 20%</p>
+                    <ul class="ticket__features">
+                        <li>Sin anuncios</li>
+                        <li>Acceso premium</li>
+                        <li>Descargas ilimitadas</li>
+                        <li>20% de ahorro</li>
+                    </ul>
                 </div>
-                <div class="plan-features">
-                    <ul><li>✅ Sin anuncios</li><li>✅ Acceso premium</li><li>✅ Descargas</li><li>✅ 20% ahorro</li></ul>
+                <div class="ticket__perforation" aria-hidden="true"></div>
+                <div class="ticket__stub">
+                    <p class="ticket__stub-code">ADMIT&nbsp;·&nbsp;90D</p>
+                    <div id="paypal-button-container-3meses"></div>
                 </div>
-                <div id="paypal-button-container-3meses"></div>
             </div>
 
             <!-- Plan 1 Año -->
-            <div class="plan-card" data-plan="year">
-                <div class="plan-header">
-                    <h3>1 AÑO</h3>
-                    <div class="price">$24.99<span>/año</span></div>
-                    <div class="savings">Ahorras 40%</div>
+            <div class="ticket" data-plan="year">
+                <div class="ticket__main">
+                    <p class="ticket__label">Boleto de entrada</p>
+                    <h3 class="ticket__title">1 Año</h3>
+                    <div class="ticket__price">$24.99<span>&nbsp;/ año</span></div>
+                    <p class="ticket__savings">Ahorras 40%</p>
+                    <ul class="ticket__features">
+                        <li>Sin anuncios</li>
+                        <li>Acceso premium</li>
+                        <li>Descargas ilimitadas</li>
+                        <li>40% de ahorro</li>
+                    </ul>
                 </div>
-                <div class="plan-features">
-                    <ul><li>✅ Sin anuncios</li><li>✅ Acceso premium</li><li>✅ Descargas</li><li>✅ 40% ahorro</li></ul>
-                </div>
-                <div id="paypal-button-container-year"></div>
-            </div>
-        </div>
-
-        <div id="codeModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>🎉 ¡Suscripción Activada!</h2>
-                <div class="code-container">
-                    <p>Tu código premium es:</p>
-                    <div id="premiumCode" class="premium-code"></div>
-                    <div id="planInfo" class="plan-info"></div>
-                    <div class="security-warning">
-                        <p>⚠️ <strong>IMPORTANTE:</strong> Código válido por única vez</p>
-                    </div>
-                </div>
-                <div class="modal-buttons">
-                    <button id="copyCode" class="copy-btn">📋 Copiar Código</button>
-                    <button id="closeModal" class="close-btn">✅ Entendido</button>
+                <div class="ticket__perforation" aria-hidden="true"></div>
+                <div class="ticket__stub">
+                    <p class="ticket__stub-code">ADMIT&nbsp;·&nbsp;365D</p>
+                    <div id="paypal-button-container-year"></div>
                 </div>
             </div>
         </div>
 
         <footer>
-            <p>🔐 Pagos 100% Seguros vía PayPal</p>
-            <p>© 2025 SpayCineFHD Premium</p>
+            <p>🔐 Pagos 100% seguros vía PayPal</p>
+            <p class="footer__copy">© 2026 SpayCineFHD Premium</p>
         </footer>
+    </div>
+
+    <div class="filmstrip filmstrip--bottom" aria-hidden="true"></div>
+
+    <!-- Modal: se entrega como boleto ya sellado -->
+    <div id="codeModal" class="modal">
+        <div class="modal-content ticket ticket--reveal">
+            <span class="close">&times;</span>
+            <div class="ticket__main">
+                <p class="ticket__label">🎬 Suscripción activada</p>
+                <h2 class="ticket__title ticket__title--modal">Tu código</h2>
+                <div id="premiumCode" class="premium-code"></div>
+                <div id="planInfo" class="plan-info"></div>
+                <p class="security-warning">⚠️ Código válido por única vez</p>
+            </div>
+            <div class="ticket__perforation" aria-hidden="true"></div>
+            <div class="ticket__stub ticket__stub--modal">
+                <button id="copyCode" class="copy-btn">Copiar código</button>
+                <button id="closeModal" class="close-btn">Entendido</button>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
-    
-    <!-- PayPal SDK con NUEVO CLIENT ID de SpayCineFHD -->
+
+    <!-- PayPal SDK con Client ID de SpayCineFHD -->
     <script src="https://www.paypal.com/sdk/js?client-id=AY0nnda_UQgpMWS8myeqVXNKONcr3pBhj13TUE6UWh5b2H9mrBeEajYhS1QHzGJgOhLrjSPgjZhVKu4s&currency=USD&vault=true&intent=subscription"></script>
-    
+
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
 </body>
