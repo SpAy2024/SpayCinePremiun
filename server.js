@@ -12,12 +12,16 @@ app.use(express.static('.'));
 // ── PayPal ────────────────────────────────────────────────
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_SECRET = process.env.PAYPAL_SECRET;
+const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID; // ID del webhook, no el secret
 const PAYPAL_API = process.env.NODE_ENV === 'production'
     ? 'https://api-m.paypal.com'
     : 'https://api-m.sandbox.paypal.com';
 
 if (!PAYPAL_CLIENT_ID || !PAYPAL_SECRET) {
     console.error('❌ Falta PAYPAL_CLIENT_ID / PAYPAL_SECRET en las variables de entorno');
+}
+if (!PAYPAL_WEBHOOK_ID) {
+    console.error('⚠️ Falta PAYPAL_WEBHOOK_ID — las renovaciones y cancelaciones no se procesarán');
 }
 
 async function paypalAuthHeader() {
@@ -35,17 +39,37 @@ async function getSubscription(subscriptionId) {
     return res.json();
 }
 
-// ── Firebase Admin (privilegios de servidor, no el SDK del cliente) ──
-// En Render, pon el JSON de la cuenta de servicio en la variable de entorno
-// FIREBASE_SERVICE_ACCOUNT (como texto), y la URL de tu Realtime Database
-// en FIREBASE_DB_URL.
+// Verifica que el webhook realmente viene de PayPal (evita que cualquiera
+// pueda pegarle a /api/paypal-webhook y falsificar una renovación o cancelación)
+async function verifyWebhookSignature(headers, body) {
+    const res = await fetch(`${PAYPAL_API}/v1/notifications/verify-webhook-signature`, {
+        method: 'POST',
+        headers: {
+            Authorization: await paypalAuthHeader(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            transmission_id: headers['paypal-transmission-id'],
+            transmission_time: headers['paypal-transmission-time'],
+            cert_url: headers['paypal-cert-url'],
+            auth_algo: headers['paypal-auth-algo'],
+            transmission_sig: headers['paypal-transmission-sig'],
+            webhook_id: PAYPAL_WEBHOOK_ID,
+            webhook_event: body
+        })
+    });
+    const data = await res.json();
+    return data.verification_status === 'SUCCESS';
+}
+
+// ── Firebase Admin ───────────────────────────────────────────
 admin.initializeApp({
     credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
     databaseURL: process.env.FIREBASE_DB_URL
 });
 const db = admin.database();
 
-// ── Planes (fuente de verdad: SOLO el servidor decide precio/duración) ──
+// ── Planes (fuente de verdad) ────────────────────────────────
 const PLANS = {
     mensual: { name: '1 Mes', price: 2.99, days: 30, plan_id: 'P-18381349AF867540CNEVSH5I', prefix: 'M' },
     '3meses': { name: '3 Meses', price: 7.99, days: 90, plan_id: 'P-5PP81994FM215525RNEVSJFA', prefix: 'T' },
@@ -59,7 +83,6 @@ function generateCode(prefix) {
     return code;
 }
 
-// Genera un código único reintentando si ya existe en la base de datos
 async function generateUniqueCode(prefix) {
     for (let attempt = 0; attempt < 5; attempt++) {
         const code = generateCode(prefix);
@@ -69,8 +92,7 @@ async function generateUniqueCode(prefix) {
     throw new Error('No se pudo generar un código único, intenta de nuevo');
 }
 
-// ── Endpoint clave: el frontend SOLO manda el subscriptionID ──
-// El servidor decide si el código se genera o no.
+// ── Activación inicial: el frontend SOLO manda el subscriptionID ──
 app.post('/api/activate-subscription', async (req, res) => {
     const { subscriptionId, planType } = req.body;
 
@@ -79,21 +101,17 @@ app.post('/api/activate-subscription', async (req, res) => {
     }
 
     try {
-        // Evita generar dos códigos para la misma suscripción si el usuario
-        // recarga la página o hace doble clic
         const existing = await db.ref('Transactions/' + subscriptionId).get();
         if (existing.exists()) {
             return res.json({ code: existing.val().code, plan: PLANS[planType].name });
         }
 
-        // Verificación REAL contra PayPal — esto es lo que faltaba
         const subscription = await getSubscription(subscriptionId);
 
         if (subscription.status !== 'ACTIVE') {
             return res.status(402).json({ error: `Suscripción no activa (status: ${subscription.status})` });
         }
 
-        // Confirma que el plan aprobado coincide con el que se está reclamando
         if (subscription.plan_id !== PLANS[planType].plan_id) {
             return res.status(400).json({ error: 'El plan no coincide con la suscripción verificada' });
         }
@@ -125,7 +143,98 @@ app.post('/api/activate-subscription', async (req, res) => {
     }
 });
 
-// Cancelar suscripción (igual que antes)
+// ── Webhook de PayPal: renovaciones, cancelaciones, reembolsos ──
+// Configúralo en developer.paypal.com -> tu app -> Webhooks, apuntando a
+// https://TU-SERVIDOR.onrender.com/api/paypal-webhook con estos eventos:
+//   PAYMENT.SALE.COMPLETED, BILLING.SUBSCRIPTION.CANCELLED,
+//   BILLING.SUBSCRIPTION.SUSPENDED, BILLING.SUBSCRIPTION.EXPIRED,
+//   PAYMENT.SALE.REFUNDED
+app.post('/api/paypal-webhook', async (req, res) => {
+    const event = req.body;
+
+    try {
+        const isValid = await verifyWebhookSignature(req.headers, event);
+        if (!isValid) {
+            console.warn('⚠️ Webhook con firma inválida, ignorado');
+            return res.status(400).json({ error: 'Firma inválida' });
+        }
+
+        console.log('📩 Webhook PayPal:', event.event_type);
+
+        switch (event.event_type) {
+            // Cobro de renovación exitoso → extiende la fecha de expiración
+            case 'PAYMENT.SALE.COMPLETED': {
+                const subscriptionId = event.resource.billing_agreement_id;
+                if (!subscriptionId) break;
+
+                const txSnap = await db.ref('Transactions/' + subscriptionId).get();
+                if (!txSnap.exists()) {
+                    console.warn(`Pago recibido para suscripción desconocida: ${subscriptionId}`);
+                    break;
+                }
+
+                const tx = txSnap.val();
+                const plan = PLANS[tx.planType];
+                if (!plan) break;
+
+                // Extiende desde la fecha de expiración actual (o desde ahora si ya venció)
+                const base = Math.max(tx.expiresAt || 0, Date.now());
+                const newExpiresAt = base + plan.days * 24 * 60 * 60 * 1000;
+
+                await db.ref('Transactions/' + subscriptionId).update({ expiresAt: newExpiresAt, status: 'active' });
+                await db.ref('ActivationCodes/' + tx.code).update({ expiresAt: newExpiresAt, status: 'active' });
+
+                console.log(`✅ Renovado ${tx.code} hasta ${new Date(newExpiresAt).toISOString()}`);
+                break;
+            }
+
+            // Cancelación, suspensión o vencimiento → revoca el acceso
+            case 'BILLING.SUBSCRIPTION.CANCELLED':
+            case 'BILLING.SUBSCRIPTION.SUSPENDED':
+            case 'BILLING.SUBSCRIPTION.EXPIRED': {
+                const subscriptionId = event.resource.id;
+                const txSnap = await db.ref('Transactions/' + subscriptionId).get();
+                if (!txSnap.exists()) break;
+
+                const tx = txSnap.val();
+                await db.ref('Transactions/' + subscriptionId).update({ status: 'revoked' });
+                await db.ref('ActivationCodes/' + tx.code).update({ status: 'revoked' });
+
+                console.log(`🚫 Revocado ${tx.code} (${event.event_type})`);
+                break;
+            }
+
+            // Reembolso → revoca de inmediato
+            case 'PAYMENT.SALE.REFUNDED': {
+                const subscriptionId = event.resource.billing_agreement_id;
+                if (!subscriptionId) break;
+
+                const txSnap = await db.ref('Transactions/' + subscriptionId).get();
+                if (!txSnap.exists()) break;
+
+                const tx = txSnap.val();
+                await db.ref('Transactions/' + subscriptionId).update({ status: 'revoked' });
+                await db.ref('ActivationCodes/' + tx.code).update({ status: 'revoked' });
+
+                console.log(`🚫 Revocado por reembolso: ${tx.code}`);
+                break;
+            }
+
+            default:
+                // Otros eventos no nos interesan
+                break;
+        }
+
+        res.status(200).json({ received: true });
+    } catch (error) {
+        console.error('Error procesando webhook:', error);
+        // Responder 200 igual evita que PayPal reintente infinitamente un evento
+        // que va a seguir fallando por el mismo motivo; solo lo dejamos logueado.
+        res.status(200).json({ received: true, error: 'internal' });
+    }
+});
+
+// Cancelar suscripción manualmente desde tu propio panel/soporte
 app.post('/api/cancel-subscription', async (req, res) => {
     const { subscriptionId, reason } = req.body;
     try {
