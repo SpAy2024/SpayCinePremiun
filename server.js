@@ -92,6 +92,65 @@ async function generateUniqueCode(prefix) {
     throw new Error('No se pudo generar un código único, intenta de nuevo');
 }
 
+// ── Crear una suscripción para el flujo NATIVO (app Android con WebView) ──
+// Distinto del flujo web (que usa el JS SDK de PayPal con botones): aquí el
+// backend crea la suscripción directamente contra la API de PayPal y le
+// devuelve a la app un link de aprobación para abrir en un WebView.
+app.post('/api/create-subscription', async (req, res) => {
+    const { planType } = req.body;
+
+    if (!PLANS[planType]) {
+        return res.status(400).json({ error: 'planType inválido' });
+    }
+
+    try {
+        const response = await fetch(`${PAYPAL_API}/v1/billing/subscriptions`, {
+            method: 'POST',
+            headers: {
+                Authorization: await paypalAuthHeader(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                plan_id: PLANS[planType].plan_id,
+                application_context: {
+                    brand_name: 'SpayCineFHD',
+                    user_action: 'SUBSCRIBE_NOW',
+                    return_url: `${req.protocol}://${req.get('host')}/subscription-return?planType=${planType}`,
+                    cancel_url: `${req.protocol}://${req.get('host')}/subscription-cancel`
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('Error creando suscripción en PayPal:', data);
+            return res.status(502).json({ error: 'No se pudo crear la suscripción con PayPal' });
+        }
+
+        const approveLink = (data.links || []).find(l => l.rel === 'approve');
+        if (!approveLink) {
+            return res.status(502).json({ error: 'PayPal no devolvió un link de aprobación' });
+        }
+
+        res.json({ approvalUrl: approveLink.href, subscriptionId: data.id });
+    } catch (error) {
+        console.error('Error creando suscripción:', error);
+        res.status(500).json({ error: 'No se pudo crear la suscripción, intenta de nuevo' });
+    }
+});
+
+// Páginas simples de retorno — el WebView de la app NUNCA debería llegar a
+// mostrar esto en pantalla (lo intercepta antes con shouldOverrideUrlLoading),
+// pero sirven como red de seguridad si algo falla.
+app.get('/subscription-return', (req, res) => {
+    res.send('<html><body style="font-family:sans-serif;text-align:center;padding:40px;">Ya puedes volver a la app.</body></html>');
+});
+
+app.get('/subscription-cancel', (req, res) => {
+    res.send('<html><body style="font-family:sans-serif;text-align:center;padding:40px;">Pago cancelado. Puedes volver a la app.</body></html>');
+});
+
 // ── Activación inicial: el frontend SOLO manda el subscriptionID ──
 app.post('/api/activate-subscription', async (req, res) => {
     const { subscriptionId, planType } = req.body;
@@ -231,6 +290,64 @@ app.post('/api/paypal-webhook', async (req, res) => {
         // Responder 200 igual evita que PayPal reintente infinitamente un evento
         // que va a seguir fallando por el mismo motivo; solo lo dejamos logueado.
         res.status(200).json({ received: true, error: 'internal' });
+    }
+});
+
+// ── Canje del código: la app (SpayCine TV / Android) llama esto cuando
+// el usuario mete su código premium. Server-side para que nadie pueda
+// escribir isUsed:true directamente por su cuenta y "reciclar" un código
+// como si lo hubiera comprado de nuevo.
+app.post('/api/redeem-code', async (req, res) => {
+    const { code, deviceId } = req.body;
+
+    if (!code) {
+        return res.status(400).json({ error: 'Falta el código' });
+    }
+
+    const ref = db.ref('ActivationCodes/' + code.toUpperCase());
+
+    try {
+        // transaction() evita condiciones de carrera: si dos dispositivos
+        // intentan canjear el mismo código al mismo tiempo, solo uno gana.
+        const result = await ref.transaction((current) => {
+            if (current === null) return current; // no existe, no tocar
+            if (current.isUsed) return; // abortar, ya usado
+            if (current.status !== 'active') return; // revocado o vencido
+            if (current.expiresAt && current.expiresAt < Date.now()) return; // vencido
+
+            current.isUsed = true;
+            current.usedAt = Date.now();
+            current.usedByDevice = deviceId || null;
+            return current;
+        });
+
+        if (!result.committed || !result.snapshot.exists()) {
+            const snap = await ref.get();
+            if (!snap.exists()) {
+                return res.status(404).json({ error: 'Código no encontrado' });
+            }
+            const data = snap.val();
+            if (data.isUsed) {
+                return res.status(409).json({ error: 'Este código ya fue usado' });
+            }
+            if (data.status !== 'active') {
+                return res.status(410).json({ error: 'Este código fue revocado' });
+            }
+            if (data.expiresAt && data.expiresAt < Date.now()) {
+                return res.status(410).json({ error: 'Este código venció' });
+            }
+            return res.status(409).json({ error: 'No se pudo canjear el código' });
+        }
+
+        const record = result.snapshot.val();
+        res.json({
+            valid: true,
+            plan: record.plan,
+            expiresAt: record.expiresAt
+        });
+    } catch (error) {
+        console.error('Error canjeando código:', error);
+        res.status(500).json({ error: 'No se pudo validar el código, intenta de nuevo' });
     }
 });
 
