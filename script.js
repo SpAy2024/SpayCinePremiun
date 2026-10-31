@@ -80,7 +80,7 @@
     }
 
  
-    async function handlePayPalReturn() {
+       async function handlePayPalReturn() {
         const params = new URLSearchParams(window.location.search);
         const paymentId = params.get('paymentId') || params.get('tx');
         const status = params.get('status');
@@ -89,8 +89,8 @@
             console.log('✅ Pago detectado:', paymentId);
             window.history.replaceState({}, document.title, window.location.pathname);
 
-            // 🔒 VERIFICACIÓN DE SEGURIDAD CON RENDER
             try {
+                // 🔒 VERIFICACIÓN CON RENDER
                 const BACKEND_URL = 'https://spaycinepremiun-3u9j.onrender.com/api/verify-payment'; 
                 
                 const response = await fetch(BACKEND_URL, {
