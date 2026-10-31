@@ -1,1 +1,13 @@
-{"hosting":{"public":".","ignore":["firebase.json","**/.*","**/node_modules/**"]}}
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "backend/**",
+      "package-lock.json",
+      "package.json"
+    ]
+  }
+}
