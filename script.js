@@ -1,5 +1,4 @@
-// script.js - SpayCineFHD Premium · Solo Plan Mensual
-// PayPal Payment Link: https://www.paypal.com/ncp/payment/GLM2GDPNAA6SU
+// script.js - SpayCineFHD Premium
 (function() {
     'use strict';
 
@@ -14,8 +13,6 @@
     };
 
     console.log('🚀 SpayCineFHD Premium · Plan único: 1 Mes');
-    console.log('💰 Precio:', PLAN.priceFormatted);
-    console.log('🔗 PayPal:', PLAN.paypalLink);
 
     function generateCode() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -24,20 +21,6 @@
             code += chars[Math.floor(Math.random() * chars.length)];
         }
         return code;
-    }
-
-    async function saveCode(code, paymentId) {
-        if (typeof window.savePremiumCode !== 'function') {
-            console.warn('⚠️ Firebase no disponible, código generado solo en cliente');
-            return false;
-        }
-        const result = await window.savePremiumCode(code, {
-            name: PLAN.name,
-            type: PLAN.type,
-            price: PLAN.price,
-            paymentId: paymentId
-        });
-        return result.success;
     }
 
     function showCodeModal(code) {
@@ -79,8 +62,7 @@
         }, 1000);
     }
 
- 
-       async function handlePayPalReturn() {
+    async function handlePayPalReturn() {
         const params = new URLSearchParams(window.location.search);
         const paymentId = params.get('paymentId') || params.get('tx');
         const status = params.get('status');
@@ -89,8 +71,11 @@
             console.log('✅ Pago detectado:', paymentId);
             window.history.replaceState({}, document.title, window.location.pathname);
 
+            // Bloqueamos la pantalla mientras verificamos
+            alert('⏳ Verificando pago real con PayPal... Por favor, espera.');
+
             try {
-                // 🔒 VERIFICACIÓN CON RENDER
+                // 🔒 LLAMADA AL SERVIDOR EN RENDER
                 const BACKEND_URL = 'https://spaycinepremiun-3u9j.onrender.com/api/verify-payment'; 
                 
                 const response = await fetch(BACKEND_URL, {
@@ -100,31 +85,32 @@
                 });
                 
                 const result = await response.json();
+                console.log('Respuesta del servidor:', result);
 
-                if (result.valid) {
+                if (result.valid === true) {
+                    // Si PayPal dice que el pago es real, generamos y guardamos
                     const code = generateCode();
-                    await saveCode(code, paymentId);
+                    if (typeof window.savePremiumCode === 'function') {
+                        await window.savePremiumCode(code, {
+                            name: PLAN.name, type: PLAN.type, price: PLAN.price, paymentId: paymentId
+                        });
+                    }
                     showCodeModal(code);
                 } else {
-                    alert('⚠️ Pago no válido o no encontrado. Si pagaste, contacta a soporte.');
+                    alert('⚠️ Pago no válido o no encontrado. No se generará ningún código.');
                 }
             } catch (error) {
                 console.error('Error conectando al servidor:', error);
-                alert('Error de conexión con el validador. Intenta de nuevo.');
+                alert('❌ Error de conexión. Asegúrate de haber pagado primero.');
             }
         }
     }
 
-
     function initPayButton() {
         const btn = document.getElementById('paypal-button-mensual');
-        if (!btn) {
-            console.warn('⚠️ Botón de PayPal no encontrado en el DOM');
-            return;
-        }
+        if (!btn) return;
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('💳 Redirigiendo a PayPal...');
             window.location.href = PLAN.paypalLink;
         });
     }
