@@ -6,10 +6,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ⚠️ REEMPLAZA ESTO CON TUS DATOS DE PAYPAL (Los copiaste de la pantalla anterior)
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || 'TU_CLIENT_ID_AQUI';
 const PAYPAL_SECRET = process.env.PAYPAL_SECRET || 'TU_SECRET_AQUI';
-const PAYPAL_API = 'https://api-m.paypal.com'; // Modo Real (Producción)
+const PAYPAL_API = 'https://api-m.paypal.com'; 
 
 app.post('/api/verify-payment', async (req, res) => {
     const { paymentId } = req.body;
@@ -19,24 +18,35 @@ app.post('/api/verify-payment', async (req, res) => {
     }
 
     try {
-        // 1. Autenticarse con PayPal
         const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`).toString('base64');
         
-        // 2. Preguntar a PayPal sobre el pago
-        // Usamos el endpoint de órdenes (orders) o pagos (payments)
-        const response = await fetch(`${PAYPAL_API}/v2/checkout/orders/${paymentId}`, {
-            headers: {
-                'Authorization': `Basic ${auth}`,
-                'Content-Type': 'application/json'
-            }
-        });
+        // 🔍 Intentamos buscar el pago como Orden (v2) o como Pago (v1)
+        let isValid = false;
         
-        const data = await response.json();
+        // 1. Intentar con la API de Ordenes (la más común en Link de Pago)
+        let response = await fetch(`${PAYPAL_API}/v2/checkout/orders/${paymentId}`, {
+            headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' }
+        });
+        let data = await response.json();
 
-        // 3. Verificar que el pago esté COMPLETADO y sea por $2.99 USD
         if (data.status === 'COMPLETED' && data.purchase_units[0].amount.value === '2.99') {
+            isValid = true;
+        } else {
+            // 2. Si falla, intentar con la API de Pagos (v1)
+            response = await fetch(`${PAYPAL_API}/v1/payments/payment/${paymentId}`, {
+                headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' }
+            });
+            data = await response.json();
+            
+            if (data.state === 'approved' && data.transactions[0].amount.total === '2.99') {
+                isValid = true;
+            }
+        }
+
+        if (isValid) {
             return res.json({ valid: true });
         } else {
+            console.log('❌ Pago no válido:', data);
             return res.json({ valid: false, error: 'El pago no está completado o el monto es incorrecto' });
         }
 
