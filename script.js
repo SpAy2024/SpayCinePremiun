@@ -91,7 +91,7 @@
             // 🔒 VERIFICACIÓN DE SEGURIDAD: Le preguntamos a nuestro backend en Render
             try {
                 // ⚠️ AQUÍ PONDRÁS LA URL DE RENDER MÁS ADELANTE
-                const BACKEND_URL = 'https://spaycine-backend.onrender.com/api/verify-payment'; 
+                const BACKEND_URL = 'https://spaycinepremiun-3u9j.onrender.com/api/verify-payment'; 
                 
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
