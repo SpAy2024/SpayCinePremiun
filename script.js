@@ -79,7 +79,8 @@
         }, 1000);
     }
 
-        async function handlePayPalReturn() {
+ 
+    async function handlePayPalReturn() {
         const params = new URLSearchParams(window.location.search);
         const paymentId = params.get('paymentId') || params.get('tx');
         const status = params.get('status');
@@ -88,9 +89,8 @@
             console.log('✅ Pago detectado:', paymentId);
             window.history.replaceState({}, document.title, window.location.pathname);
 
-            // 🔒 VERIFICACIÓN DE SEGURIDAD: Le preguntamos a nuestro backend en Render
+            // 🔒 VERIFICACIÓN DE SEGURIDAD CON RENDER
             try {
-                // ⚠️ AQUÍ PONDRÁS LA URL DE RENDER MÁS ADELANTE
                 const BACKEND_URL = 'https://spaycinepremiun-3u9j.onrender.com/api/verify-payment'; 
                 
                 const response = await fetch(BACKEND_URL, {
@@ -102,7 +102,6 @@
                 const result = await response.json();
 
                 if (result.valid) {
-                    // Si PayPal confirma que es real, damos el código
                     const code = generateCode();
                     await saveCode(code, paymentId);
                     showCodeModal(code);
@@ -111,10 +110,11 @@
                 }
             } catch (error) {
                 console.error('Error conectando al servidor:', error);
-                alert('Error de conexión. Intenta de nuevo.');
+                alert('Error de conexión con el validador. Intenta de nuevo.');
             }
         }
     }
+
 
     function initPayButton() {
         const btn = document.getElementById('paypal-button-mensual');
