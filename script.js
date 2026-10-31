@@ -1,183 +1,121 @@
-// script.js - Versión final con PayPal + Firebase
+// script.js - SpayCineFHD Premium · Solo Plan Mensual
+// PayPal Payment Link: https://www.paypal.com/ncp/payment/GLM2GDPNAA6SU
 (function() {
     'use strict';
 
-    // Planes con sus IDs de PayPal
-    const PLANS = {
-        mensual: {
-            name: '1 Mes',
-            price: 2.99,
-            priceFormatted: '$2.99',
-            days: 30,
-            plan_id: 'P-18381349AF867540CNEVSH5I',
-            prefix: 'M'
-        },
-        '3meses': {
-            name: '3 Meses',
-            price: 7.99,
-            priceFormatted: '$7.99',
-            days: 90,
-            plan_id: 'P-5PP81994FM215525RNEVSJFA',
-            prefix: 'T'
-        },
-        year: {
-            name: '1 Año',
-            price: 24.99,
-            priceFormatted: '$24.99',
-            days: 365,
-            plan_id: 'P-3E203769WC9540323NEVSJ5Q',
-            prefix: 'Y'
-        }
+    const PLAN = {
+        type: 'mensual',
+        name: '1 Mes',
+        price: 2.99,
+        priceFormatted: '$2.99',
+        days: 30,
+        paypalLink: 'https://www.paypal.com/ncp/payment/GLM2GDPNAA6SU',
+        prefix: 'M'
     };
 
-    console.log('🚀 SpayCineHD Premium - Iniciando...');
+    console.log('🚀 SpayCineFHD Premium · Plan único: 1 Mes');
+    console.log('💰 Precio:', PLAN.priceFormatted);
+    console.log('🔗 PayPal:', PLAN.paypalLink);
 
-    // Generar código único
-    function generateCode(planType) {
-        const plan = PLANS[planType];
+    function generateCode() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code = plan.prefix;
+        let code = PLAN.prefix;
         for (let i = 0; i < 8; i++) {
             code += chars[Math.floor(Math.random() * chars.length)];
         }
         return code;
     }
 
-    // Guardar en Firebase
-    async function saveSubscription(code, planType, subscriptionId, email = null) {
-        const plan = PLANS[planType];
-        
-        const subscriptionData = {
-            code: code,
-            plan: plan.name,
-            planType: planType,
-            price: plan.price,
-            subscriptionId: subscriptionId,
-            createdAt: firebase.database.ServerValue.TIMESTAMP,
-            status: 'active',
-            isUsed: false
-        };
-        
-        try {
-            // Guardar en ActivationCodes
-            await window.firebaseDB.ref('ActivationCodes/' + code).set(subscriptionData);
-            
-            // Guardar en Transactions
-            await window.firebaseDB.ref('Transactions/' + subscriptionId).set({
-                ...subscriptionData,
-                email: email || 'pending@webhook.com'
-            });
-            
-            console.log('✅ Suscripción guardada en Firebase');
-            
-            // Llamar al webhook (Cloud Function)
-            if (typeof window.callPayPalWebhook === 'function') {
-                await window.callPayPalWebhook({
-                    subscription_id: subscriptionId,
-                    plan_id: plan.plan_id,
-                    plan_name: plan.name,
-                    code: code,
-                    amount: plan.price,
-                    status: 'ACTIVE',
-                    event_type: 'PAYPAL.SUBSCRIPTION.ACTIVATED'
-                });
-            }
-            
-            return true;
-        } catch (error) {
-            console.error('❌ Error guardando:', error);
+    async function saveCode(code, paymentId) {
+        if (typeof window.savePremiumCode !== 'function') {
+            console.warn('⚠️ Firebase no disponible, código generado solo en cliente');
             return false;
         }
+        const result = await window.savePremiumCode(code, {
+            name: PLAN.name,
+            type: PLAN.type,
+            price: PLAN.price,
+            paymentId: paymentId
+        });
+        return result.success;
     }
 
-    // Mostrar modal
-    function showModal(code, planType) {
-        const plan = PLANS[planType];
+    function showCodeModal(code) {
         const modal = document.getElementById('codeModal');
-        
+        if (!modal) return;
+
         document.getElementById('premiumCode').textContent = code;
         document.getElementById('planInfo').innerHTML = `
-            <p><strong>Plan:</strong> ${plan.name}</p>
-            <p><strong>Precio:</strong> ${plan.priceFormatted}</p>
-            <p><strong>Duración:</strong> ${plan.days} días</p>
-            <p style="color: #4caf50; margin-top: 10px;">✅ Suscripción activada correctamente</p>
-            <p style="color: #ff9800; font-size: 0.9em;">⚠️ Guarda este código para activar tu cuenta en la app</p>
+            <p><strong>Plan:</strong> ${PLAN.name}</p>
+            <p><strong>Precio:</strong> ${PLAN.priceFormatted}</p>
+            <p><strong>Duración:</strong> ${PLAN.days} días</p>
+            <p style="color:#4caf50;">✅ Pago confirmado por PayPal</p>
+            <p style="color:#ff9800;">⚠️ Guarda este código para activar en la app</p>
         `;
-        
-        modal.style.display = 'block';
-        
-        // Botón copiar
-        document.getElementById('copyCode').onclick = async () => {
+        modal.style.display = 'flex';
+
+        const copyBtn = document.getElementById('copyCode');
+        copyBtn.onclick = async () => {
             try {
                 await navigator.clipboard.writeText(code);
-                alert('✅ Código copiado al portapapeles');
-            } catch (err) {
-                alert('❌ Copia manual: Selecciona el código y presiona Ctrl+C');
+                copyBtn.innerHTML = '<span>✅</span> ¡Copiado!';
+                setTimeout(() => copyBtn.innerHTML = '<span>📋</span> Copiar Código', 2000);
+            } catch {
+                alert('Copia manual: ' + code);
             }
         };
-        
-        // Botón cerrar
-        document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
-        document.querySelector('.close').onclick = () => modal.style.display = 'none';
-        
-        // Cierre automático a los 60 segundos
-        setTimeout(() => modal.style.display = 'none', 60000);
+
+        const closeModal = () => { modal.style.display = 'none'; };
+        document.getElementById('closeModal').onclick = closeModal;
+        document.querySelector('.close').onclick = closeModal;
+        window.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+        let seconds = 60;
+        const cd = document.getElementById('countdown');
+        const timer = setInterval(() => {
+            seconds--;
+            if (cd) cd.textContent = seconds;
+            if (seconds <= 0) { clearInterval(timer); closeModal(); }
+        }, 1000);
     }
 
-    // Inicializar botones PayPal
-    function initPayPal() {
-        if (typeof paypal === 'undefined') {
-            console.log('⏳ Esperando PayPal SDK...');
-            setTimeout(initPayPal, 500);
+    function handlePayPalReturn() {
+        const params = new URLSearchParams(window.location.search);
+        const paymentId = params.get('paymentId') || params.get('tx');
+        const status = params.get('status');
+
+        if (paymentId && (status === 'success' || !status)) {
+            console.log('✅ Pago detectado:', paymentId);
+            window.history.replaceState({}, document.title, window.location.pathname);
+
+            const code = generateCode();
+            saveCode(code, paymentId).then(() => {
+                showCodeModal(code);
+            });
+        }
+    }
+
+    function initPayButton() {
+        const btn = document.getElementById('paypal-button-mensual');
+        if (!btn) {
+            console.warn('⚠️ Botón de PayPal no encontrado en el DOM');
             return;
         }
-        
-        console.log('✅ PayPal SDK cargado');
-        
-        Object.keys(PLANS).forEach(planType => {
-            const plan = PLANS[planType];
-            const container = document.getElementById(`paypal-button-container-${planType}`);
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
-            paypal.Buttons({
-                style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
-                
-                createSubscription: (data, actions) => {
-                    console.log(`💳 Creando suscripción: ${plan.name}`);
-                    return actions.subscription.create({ plan_id: plan.plan_id });
-                },
-                
-                onApprove: async (data) => {
-                    console.log(`✅ Suscripción aprobada:`, data);
-                    
-                    const code = generateCode(planType);
-                    await saveSubscription(code, planType, data.subscriptionID);
-                    showModal(code, planType);
-                    
-                    alert(`🎉 ¡Suscripción exitosa!\n\nPlan: ${plan.name}\nCódigo: ${code}\n\nGuarda este código para activar tu cuenta.`);
-                },
-                
-                onError: (err) => {
-                    console.error(`❌ Error en ${plan.name}:`, err);
-                    alert('Error al procesar el pago. Por favor intenta de nuevo.');
-                }
-                
-            }).render(`#paypal-button-container-${planType}`);
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('💳 Redirigiendo a PayPal...');
+            window.location.href = PLAN.paypalLink;
         });
     }
-    
-    // Esperar Firebase y luego iniciar PayPal
-    function waitForFirebase() {
-        if (window.firebaseDB) {
-            console.log('✅ Firebase listo');
-            initPayPal();
-        } else {
-            console.log('⏳ Esperando Firebase...');
-            setTimeout(waitForFirebase, 300);
-        }
+
+    function init() {
+        initPayButton();
+        handlePayPalReturn();
     }
-    
-    waitForFirebase();
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();

@@ -3,93 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpayCineHD Premium</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>SpayCineFHD Premium | Sin anuncios</title>
+    <meta name="description" content="SpayCineFHD Premium: sin anuncios, descargas ilimitadas y soporte prioritario. Pago seguro con PayPal.">
+    <meta name="theme-color" content="#e50914">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#000; font-family:'Netflix Sans','Helvetica Neue',Arial,sans-serif; color:#fff; line-height:1.5; min-height:100vh; }
+        body::before { content:''; position:fixed; inset:0; background:radial-gradient(circle at 20% 30%, rgba(229,9,20,.25), #000 90%); z-index:-2; }
+        .container { max-width:900px; margin:0 auto; background:rgba(0,0,0,.82); z-index:2; position:relative; }
+        header { background:linear-gradient(180deg,#e50914,#b20710); padding:60px 30px 50px; text-align:center; clip-path:polygon(0 0,100% 0,100% 95%,0 100%); }
+        .logo h1 { font-size:4rem; font-weight:800; background:linear-gradient(135deg,#fff 20%,#f0f0f0 80%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .logo h1 span { background:linear-gradient(135deg,#ffd966,#ffaa00); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .security-badge { display:inline-flex; align-items:center; gap:10px; background:rgba(0,0,0,.65); padding:8px 24px; border-radius:40px; font-size:.9rem; font-weight:600; border:1px solid rgba(255,255,255,.2); margin-top:16px; }
+        .subtitle { margin-top:18px; font-size:1.1rem; color:rgba(255,255,255,.95); }
+        .plans-container { display:flex; justify-content:center; padding:50px 25px; }
+        .plan-card { background:linear-gradient(145deg,#141414,#0a0a0a); border-radius:28px; padding:40px 30px 35px; width:100%; max-width:380px; border:2px solid #e50914; position:relative; overflow:hidden; box-shadow:0 20px 35px -12px rgba(0,0,0,.6); }
+        .plan-card .popular-badge { position:absolute; top:18px; right:-30px; background:#e50914; color:#fff; padding:6px 40px; font-size:.75rem; font-weight:800; transform:rotate(45deg); }
+        .plan-header h3 { font-size:1.9rem; color:#e50914; margin-bottom:18px; text-align:center; }
+        .price { text-align:center; margin:18px 0; }
+        .new-price { font-size:3rem; font-weight:800; color:#ffc107; }
+        .period { font-size:.95rem; color:#aaa; }
+        .plan-features { margin:30px 0 25px; }
+        .plan-features ul { list-style:none; }
+        .plan-features li { padding:12px 0; color:#ccc; font-size:.92rem; border-bottom:1px solid rgba(255,255,255,.05); }
+        .plan-features li strong { color:#ffc107; }
+        #paypal-button-mensual { width:100%; padding:16px; border:none; border-radius:40px; background:#ffc107; color:#000; font-size:1.1rem; font-weight:800; cursor:pointer; transition:all .2s; box-shadow:0 8px 20px rgba(255,193,7,.3); }
+        #paypal-button-mensual:hover { background:#ffd54f; transform:scale(1.02); }
+        .app-info { background:rgba(20,20,20,.7); border-radius:28px; margin:20px 25px 40px; padding:40px 30px; border:1px solid rgba(229,9,20,.3); }
+        .app-info h3 { font-size:1.6rem; color:#e50914; margin-bottom:30px; text-align:center; }
+        .steps { display:flex; gap:20px; flex-wrap:wrap; }
+        .step { flex:1; min-width:200px; text-align:center; background:rgba(0,0,0,.5); padding:22px 15px; border-radius:24px; }
+        .step-number { width:60px; height:60px; background:#e50914; border-radius:60px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:800; margin:0 auto 15px; }
+        .security-features { display:flex; justify-content:center; gap:15px; flex-wrap:wrap; padding-top:25px; margin-top:30px; border-top:1px solid rgba(229,9,20,.3); }
+        .security-item { background:#0f0f0f; padding:8px 18px; border-radius:60px; font-size:.85rem; font-weight:500; }
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.96); z-index:2000; align-items:center; justify-content:center; padding:15px; }
+        .modal-content { background:#111; border-radius:32px; width:100%; max-width:560px; border:1px solid #e50914; box-shadow:0 40px 70px rgba(229,9,20,.3); animation:modalFloat .35s ease-out; }
+        @keyframes modalFloat { from{opacity:0;transform:scale(.95) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        .modal-header { background:linear-gradient(95deg,#e50914,#b20710); padding:28px; text-align:center; border-radius:32px 32px 0 0; position:relative; }
+        .modal-header h2 { font-size:1.7rem; }
+        .close { position:absolute; right:20px; top:12px; font-size:34px; cursor:pointer; }
+        .close:hover { color:#ffc107; }
+        .code-container { padding:30px; text-align:center; }
+        .premium-code { background:#0a0a0a; font-size:2rem; font-family:monospace; letter-spacing:4px; padding:22px; border-radius:20px; color:#ffc107; font-weight:800; border:2px solid #e50914; margin:20px 0; word-break:break-all; animation:softPulse 1.8s infinite alternate; }
+        @keyframes softPulse { 0%{box-shadow:0 0 0 rgba(229,9,20,.3)} 100%{box-shadow:0 0 18px rgba(229,9,20,.7)} }
+        .plan-info { background:rgba(229,9,20,.15); padding:15px; border-radius:20px; margin:15px 0; font-weight:500; text-align:left; }
+        .modal-buttons { display:flex; gap:14px; padding:20px 25px; }
+        .copy-btn, .close-btn { flex:1; padding:14px; border-radius:40px; font-weight:700; border:none; font-size:1rem; cursor:pointer; transition:all .2s; }
+        .copy-btn { background:#e50914; color:#fff; }
+        .copy-btn:hover { background:#ff1a2c; }
+        .close-btn { background:#2a2a2a; color:#fff; }
+        .close-btn:hover { background:#3a3a3a; }
+        .timer { background:rgba(0,0,0,.35); padding:14px; border-radius:0 0 32px 32px; font-size:.85rem; text-align:center; }
+        footer { background:#050505; padding:35px 20px; border-top:1px solid #e50914; text-align:center; }
+        footer p { color:#aaa; font-size:.8rem; margin:5px 0; }
+        .payment-icons { font-size:1.8rem; margin:12px 0; letter-spacing:15px; }
+        @media (max-width:600px){
+            .logo h1 { font-size:2.5rem; }
+            .new-price { font-size:2.2rem; }
+            .modal-buttons { flex-direction:column; }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
             <div class="logo">
-                <h1>SpayCineHD</h1>
-                <div class="security-badge">🔒 Pagos Seguros con PayPal</div>
+                <h1>SpayCine<span>FHD</span></h1>
+                <div class="security-badge">🔒 Pagos 100% Seguros con PayPal</div>
             </div>
-            <p class="subtitle">Sin anuncios • Descargas • Soporte prioritario</p>
+            <p class="subtitle">Sin anuncios • Descargas ilimitadas • Soporte prioritario 24/7</p>
         </header>
 
         <div class="plans-container">
-            <!-- Plan 1 Mes -->
-            <div class="plan-card" data-plan="mensual">
+            <div class="plan-card">
+                <div class="popular-badge">⭐ ÚNICO PLAN ⭐</div>
                 <div class="plan-header">
-                    <h3>1 MES</h3>
-                    <div class="price">$2.99<span>/mes</span></div>
+                    <h3>Plan Mensual</h3>
+                    <div class="price">
+                        <span class="new-price">$2.99</span>
+                        <span class="period">/mes</span>
+                    </div>
                 </div>
                 <div class="plan-features">
-                    <ul><li>✅ Sin anuncios</li><li>✅ Acceso premium</li><li>✅ Descargas ilimitadas</li></ul>
+                    <ul>
+                        <li>🎬 <strong>Sin anuncios</strong> - Experiencia continua</li>
+                        <li>📥 <strong>Descargas ilimitadas</strong> - Offline sin límites</li>
+                        <li>🎯 <strong>Acceso premium</strong> - Todo el contenido</li>
+                        <li>🔄 <strong>Cancelación flexible</strong> - Sin permanencia</li>
+                        <li>👑 <strong>Soporte prioritario 24/7</strong></li>
+                    </ul>
                 </div>
-                <div id="paypal-button-container-mensual"></div>
+                <button id="paypal-button-mensual">💳 Pagar con PayPal</button>
             </div>
+        </div>
 
-            <!-- Plan 3 Meses -->
-            <div class="plan-card popular" data-plan="3meses">
-                <div class="popular-badge">MÁS POPULAR</div>
-                <div class="plan-header">
-                    <h3>3 MESES</h3>
-                    <div class="price">$7.99<span>/3 meses</span></div>
-                    <div class="savings">Ahorras 20%</div>
+        <div class="app-info">
+            <h3>📱 ¿Cómo funciona?</h3>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <p>Haz clic en "Pagar con PayPal" y completa el pago seguro</p>
                 </div>
-                <div class="plan-features">
-                    <ul><li>✅ Sin anuncios</li><li>✅ Acceso premium</li><li>✅ Descargas</li><li>✅ 20% ahorro</li></ul>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <p>Recibirás un código premium exclusivo</p>
                 </div>
-                <div id="paypal-button-container-3meses"></div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <p>Ingresa el código en la app SpayCineFHD y disfruta</p>
+                </div>
             </div>
-
-            <!-- Plan 1 Año -->
-            <div class="plan-card" data-plan="year">
-                <div class="plan-header">
-                    <h3>1 AÑO</h3>
-                    <div class="price">$24.99<span>/año</span></div>
-                    <div class="savings">Ahorras 40%</div>
-                </div>
-                <div class="plan-features">
-                    <ul><li>✅ Sin anuncios</li><li>✅ Acceso premium</li><li>✅ Descargas</li><li>✅ 40% ahorro</li></ul>
-                </div>
-                <div id="paypal-button-container-year"></div>
+            <div class="security-features">
+                <div class="security-item">🔒 SSL 256-bit</div>
+                <div class="security-item">🛡️ Datos encriptados</div>
+                <div class="security-item">✅ Garantía inmediata</div>
+                <div class="security-item">🔄 Cancelación fácil</div>
             </div>
         </div>
 
         <div id="codeModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
-                <h2>🎉 ¡Suscripción Activada!</h2>
+                <div class="modal-header">
+                    <h2>🎉 ¡Suscripción Activada!</h2>
+                </div>
                 <div class="code-container">
-                    <p>Tu código premium es:</p>
+                    <p>Tu código premium exclusivo es:</p>
                     <div id="premiumCode" class="premium-code"></div>
                     <div id="planInfo" class="plan-info"></div>
-                    <div class="security-warning">
-                        <p>⚠️ <strong>IMPORTANTE:</strong> Código válido por única vez</p>
+                    <div class="security-warning" style="background:rgba(0,0,0,.6);border-left:5px solid #e50914;padding:14px;text-align:left;border-radius:14px;">
+                        <p>⚠️ <strong>Importante:</strong> Código válido por única vez. Guárdalo para activar tu cuenta en la app.</p>
                     </div>
                 </div>
                 <div class="modal-buttons">
                     <button id="copyCode" class="copy-btn">📋 Copiar Código</button>
                     <button id="closeModal" class="close-btn">✅ Entendido</button>
                 </div>
+                <div class="timer">
+                    <p>⏳ Esta ventana se cerrará en <span id="countdown">60</span> segundos</p>
+                </div>
             </div>
         </div>
 
         <footer>
             <p>🔐 Pagos 100% Seguros vía PayPal</p>
-            <p>© 2024 SpayCineHD Premium</p>
+            <div class="payment-icons">💳🔒💰</div>
+            <p>© 2025 SpayCineFHD Premium. Todos los derechos reservados.</p>
         </footer>
     </div>
 
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
-    
-    <!-- PayPal SDK con TU CLIENT ID REAL -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AZvnJPiVmaNSVR9poxUcahUcVibipdpEr7IA5IhsDpz8NWzer8SiwQ_l8y0rvk1IJVvRQUsGWNPs-dmh&currency=USD&vault=true&intent=subscription"></script>
-    
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
 </body>
