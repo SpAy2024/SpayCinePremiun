@@ -79,7 +79,7 @@
         }, 1000);
     }
 
-    function handlePayPalReturn() {
+        async function handlePayPalReturn() {
         const params = new URLSearchParams(window.location.search);
         const paymentId = params.get('paymentId') || params.get('tx');
         const status = params.get('status');
@@ -88,10 +88,31 @@
             console.log('✅ Pago detectado:', paymentId);
             window.history.replaceState({}, document.title, window.location.pathname);
 
-            const code = generateCode();
-            saveCode(code, paymentId).then(() => {
-                showCodeModal(code);
-            });
+            // 🔒 VERIFICACIÓN DE SEGURIDAD: Le preguntamos a nuestro backend en Render
+            try {
+                // ⚠️ AQUÍ PONDRÁS LA URL DE RENDER MÁS ADELANTE
+                const BACKEND_URL = 'https://spaycine-backend.onrender.com/api/verify-payment'; 
+                
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId: paymentId })
+                });
+                
+                const result = await response.json();
+
+                if (result.valid) {
+                    // Si PayPal confirma que es real, damos el código
+                    const code = generateCode();
+                    await saveCode(code, paymentId);
+                    showCodeModal(code);
+                } else {
+                    alert('⚠️ Pago no válido o no encontrado. Si pagaste, contacta a soporte.');
+                }
+            } catch (error) {
+                console.error('Error conectando al servidor:', error);
+                alert('Error de conexión. Intenta de nuevo.');
+            }
         }
     }
 
