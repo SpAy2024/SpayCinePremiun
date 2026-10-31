@@ -62,49 +62,65 @@
         }, 1000);
     }
 
-    async function handlePayPalReturn() {
-        const params = new URLSearchParams(window.location.search);
-        const paymentId = params.get('paymentId') || params.get('tx');
-        const status = params.get('status');
 
-        if (paymentId && (status === 'success' || !status)) {
-            console.log('✅ Pago detectado:', paymentId);
-            window.history.replaceState({}, document.title, window.location.pathname);
 
-            // Bloqueamos la pantalla mientras verificamos
-            alert('⏳ Verificando pago real con PayPal... Por favor, espera.');
 
-            try {
-                // 🔒 LLAMADA AL SERVIDOR EN RENDER
-                const BACKEND_URL = 'https://spaycinepremiun-3u9j.onrender.com/api/verify-payment'; 
-                
-                const response = await fetch(BACKEND_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ paymentId: paymentId })
-                });
-                
-                const result = await response.json();
-                console.log('Respuesta del servidor:', result);
+   async function handlePayPalReturn() {
+    const params = new URLSearchParams(window.location.search);
+    
+    // 🔍 Buscamos el ID en todas las formas posibles en que PayPal lo envía
+    const paymentId = params.get('paymentId') || 
+                      params.get('tx') || 
+                      params.get('token') || 
+                      params.get('PayerID') || 
+                      params.get('transaction_id');
 
-                if (result.valid === true) {
-                    // Si PayPal dice que el pago es real, generamos y guardamos
-                    const code = generateCode();
-                    if (typeof window.savePremiumCode === 'function') {
-                        await window.savePremiumCode(code, {
-                            name: PLAN.name, type: PLAN.type, price: PLAN.price, paymentId: paymentId
-                        });
-                    }
-                    showCodeModal(code);
-                } else {
-                    alert('⚠️ Pago no válido o no encontrado. No se generará ningún código.');
+    const status = params.get('status');
+
+    if (paymentId) {
+        console.log('✅ Pago detectado. ID:', paymentId);
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // Bloqueamos la pantalla mientras verificamos
+        alert('⏳ Verificando tu pago real con PayPal... Por favor, espera.');
+
+        try {
+            // 🔒 LLAMADA AL SERVIDOR EN RENDER
+            const BACKEND_URL = 'https://spaycinepremiun-3u9j.onrender.com/api/verify-payment'; 
+            
+            const response = await fetch(BACKEND_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentId: paymentId })
+            });
+            
+            const result = await response.json();
+            console.log('Respuesta del servidor:', result);
+
+            if (result.valid === true) {
+                // Si PayPal dice que el pago es real, generamos y guardamos
+                const code = generateCode();
+                if (typeof window.savePremiumCode === 'function') {
+                    await window.savePremiumCode(code, {
+                        name: PLAN.name, type: PLAN.type, price: PLAN.price, paymentId: paymentId
+                    });
                 }
-            } catch (error) {
-                console.error('Error conectando al servidor:', error);
-                alert('❌ Error de conexión. Asegúrate de haber pagado primero.');
+                showCodeModal(code);
+            } else {
+                alert('⚠️ Pago no válido o no encontrado en PayPal. Contacta a soporte.');
             }
+        } catch (error) {
+            console.error('Error conectando al servidor:', error);
+            alert('❌ Error de conexión con el validador. Asegúrate de haber pagado primero.');
         }
+    } else if (status === 'success') {
+        // Si PayPal no envía ID pero dice "success", avisamos
+        alert('⚠️ Pago recibido, pero no se pudo obtener el ID de transacción automáticamente. Contacta a soporte con tu comprobante.');
     }
+}
+  
+
+
 
     function initPayButton() {
         const btn = document.getElementById('paypal-button-mensual');
