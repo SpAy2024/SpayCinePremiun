@@ -5,154 +5,389 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpayCineFHD Premium | Sin anuncios</title>
     <meta name="description" content="SpayCineFHD Premium: sin anuncios, descargas ilimitadas y soporte prioritario. Pago seguro con PayPal.">
-    <meta name="theme-color" content="#e50914">
+    <meta name="theme-color" content="#000000">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    
+    <!-- Fuente moderna de Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Iconos FontAwesome para WhatsApp y Checkmarks -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { background:#000; font-family:'Netflix Sans','Helvetica Neue',Arial,sans-serif; color:#fff; line-height:1.5; min-height:100vh; }
-        body::before { content:''; position:fixed; inset:0; background:radial-gradient(circle at 20% 30%, rgba(229,9,20,.25), #000 90%); z-index:-2; }
-        .container { max-width:900px; margin:0 auto; background:rgba(0,0,0,.82); z-index:2; position:relative; }
-        header { background:linear-gradient(180deg,#e50914,#b20710); padding:60px 30px 50px; text-align:center; clip-path:polygon(0 0,100% 0,100% 95%,0 100%); }
-        .logo h1 { font-size:4rem; font-weight:800; background:linear-gradient(135deg,#fff 20%,#f0f0f0 80%); -webkit-background-clip:text; background-clip:text; color:transparent; }
-        .logo h1 span { background:linear-gradient(135deg,#ffd966,#ffaa00); -webkit-background-clip:text; background-clip:text; color:transparent; }
-        .security-badge { display:inline-flex; align-items:center; gap:10px; background:rgba(0,0,0,.65); padding:8px 24px; border-radius:40px; font-size:.9rem; font-weight:600; border:1px solid rgba(255,255,255,.2); margin-top:16px; }
-        .subtitle { margin-top:18px; font-size:1.1rem; color:rgba(255,255,255,.95); }
-        .plans-container { display:flex; justify-content:center; padding:50px 25px; }
-        .plan-card { background:linear-gradient(145deg,#141414,#0a0a0a); border-radius:28px; padding:40px 30px 35px; width:100%; max-width:380px; border:2px solid #e50914; position:relative; overflow:hidden; box-shadow:0 20px 35px -12px rgba(0,0,0,.6); }
-        .plan-card .popular-badge { position:absolute; top:18px; right:-30px; background:#e50914; color:#fff; padding:6px 40px; font-size:.75rem; font-weight:800; transform:rotate(45deg); }
-        .plan-header h3 { font-size:1.9rem; color:#e50914; margin-bottom:18px; text-align:center; }
-        .price { text-align:center; margin:18px 0; }
-        .new-price { font-size:3rem; font-weight:800; color:#ffc107; }
-        .period { font-size:.95rem; color:#aaa; }
-        .plan-features { margin:30px 0 25px; }
-        .plan-features ul { list-style:none; }
-        .plan-features li { padding:12px 0; color:#ccc; font-size:.92rem; border-bottom:1px solid rgba(255,255,255,.05); }
-        .plan-features li strong { color:#ffc107; }
-        #paypal-button-mensual { width:100%; padding:16px; border:none; border-radius:40px; background:#ffc107; color:#000; font-size:1.1rem; font-weight:800; cursor:pointer; transition:all .2s; box-shadow:0 8px 20px rgba(255,193,7,.3); }
-        #paypal-button-mensual:hover { background:#ffd54f; transform:scale(1.02); }
-        .app-info { background:rgba(20,20,20,.7); border-radius:28px; margin:20px 25px 40px; padding:40px 30px; border:1px solid rgba(229,9,20,.3); }
-        .app-info h3 { font-size:1.6rem; color:#e50914; margin-bottom:30px; text-align:center; }
-        .steps { display:flex; gap:20px; flex-wrap:wrap; }
-        .step { flex:1; min-width:200px; text-align:center; background:rgba(0,0,0,.5); padding:22px 15px; border-radius:24px; }
-        .step-number { width:60px; height:60px; background:#e50914; border-radius:60px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:800; margin:0 auto 15px; }
-        .security-features { display:flex; justify-content:center; gap:15px; flex-wrap:wrap; padding-top:25px; margin-top:30px; border-top:1px solid rgba(229,9,20,.3); }
-        .security-item { background:#0f0f0f; padding:8px 18px; border-radius:60px; font-size:.85rem; font-weight:500; }
-        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.96); z-index:2000; align-items:center; justify-content:center; padding:15px; }
-        .modal-content { background:#111; border-radius:32px; width:100%; max-width:560px; border:1px solid #e50914; box-shadow:0 40px 70px rgba(229,9,20,.3); animation:modalFloat .35s ease-out; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: #050505;
+            background-image: radial-gradient(circle at 50% -20%, #2a0808 0%, #050505 60%);
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+            line-height: 1.5;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* --- HEADER --- */
+        header {
+            text-align: center;
+            padding: 40px 0;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .badge-secure {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: #a0a0a0;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: #a0a0a0;
+            font-weight: 300;
+        }
+
+        /* --- TARJETA DEL PLAN --- */
+        .plan-card {
+            background: linear-gradient(145deg, rgba(20, 20, 20, 0.9), rgba(10, 10, 10, 0.9));
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 420px;
+            margin: 40px auto;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 6px 20px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .plan-name {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .price {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .price .amount {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .price .period {
+            font-size: 1rem;
+            color: #a0a0a0;
+            font-weight: 400;
+        }
+
+        /* --- BENEFICIOS --- */
+        .features {
+            list-style: none;
+            margin-bottom: 35px;
+        }
+
+        .features li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #d0d0d0;
+            font-size: 0.95rem;
+        }
+
+        .features li:last-child {
+            border-bottom: none;
+        }
+
+        .features i {
+            color: #ffd700;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* --- BOTÓN PAYPAL --- */
+        #paypal-button-mensual {
+            width: 100%;
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #paypal-button-mensual:hover {
+            background: #ffd700;
+            transform: scale(1.02);
+        }
+
+        /* --- CÓMO FUNCIONA --- */
+        .how-it-works {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        .how-it-works h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 25px 20px;
+            border-radius: 16px;
+            flex: 1;
+            min-width: 200px;
+            max-width: 280px;
+        }
+
+        .step-icon {
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .step p {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        /* --- BOTÓN FLOTANTE WHATSAPP --- */
+        .whatsapp-float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 40px;
+            right: 40px;
+            background-color: #25d366;
+            color: #FFF;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 30px;
+            box-shadow: 0px 4px 15px rgba(37, 211, 102, 0.4);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            animation: pulse-whatsapp 2s infinite;
+        }
+
+        .whatsapp-float:hover {
+            background-color: #128c7e;
+            transform: scale(1.1);
+            box-shadow: 0px 6px 20px rgba(37, 211, 102, 0.6);
+        }
+
+        @keyframes pulse-whatsapp {
+            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+
+        /* --- MODAL --- */
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.9); backdrop-filter: blur(5px);
+            z-index: 2000; align-items: center; justify-content: center; padding: 15px;
+        }
+        .modal-content {
+            background: #0f0f0f; border-radius: 24px; width: 100%; max-width: 500px;
+            border: 1px solid rgba(255,215,0,0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            animation: modalFloat .35s ease-out;
+        }
         @keyframes modalFloat { from{opacity:0;transform:scale(.95) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
-        .modal-header { background:linear-gradient(95deg,#e50914,#b20710); padding:28px; text-align:center; border-radius:32px 32px 0 0; position:relative; }
-        .modal-header h2 { font-size:1.7rem; }
-        .close { position:absolute; right:20px; top:12px; font-size:34px; cursor:pointer; }
-        .close:hover { color:#ffc107; }
-        .code-container { padding:30px; text-align:center; }
-        .premium-code { background:#0a0a0a; font-size:2rem; font-family:monospace; letter-spacing:4px; padding:22px; border-radius:20px; color:#ffc107; font-weight:800; border:2px solid #e50914; margin:20px 0; word-break:break-all; animation:softPulse 1.8s infinite alternate; }
-        @keyframes softPulse { 0%{box-shadow:0 0 0 rgba(229,9,20,.3)} 100%{box-shadow:0 0 18px rgba(229,9,20,.7)} }
-        .plan-info { background:rgba(229,9,20,.15); padding:15px; border-radius:20px; margin:15px 0; font-weight:500; text-align:left; }
-        .modal-buttons { display:flex; gap:14px; padding:20px 25px; }
-        .copy-btn, .close-btn { flex:1; padding:14px; border-radius:40px; font-weight:700; border:none; font-size:1rem; cursor:pointer; transition:all .2s; }
-        .copy-btn { background:#e50914; color:#fff; }
-        .copy-btn:hover { background:#ff1a2c; }
-        .close-btn { background:#2a2a2a; color:#fff; }
-        .close-btn:hover { background:#3a3a3a; }
-        .timer { background:rgba(0,0,0,.35); padding:14px; border-radius:0 0 32px 32px; font-size:.85rem; text-align:center; }
-        footer { background:#050505; padding:35px 20px; border-top:1px solid #e50914; text-align:center; }
-        footer p { color:#aaa; font-size:.8rem; margin:5px 0; }
-        .payment-icons { font-size:1.8rem; margin:12px 0; letter-spacing:15px; }
-        @media (max-width:600px){
-            .logo h1 { font-size:2.5rem; }
-            .new-price { font-size:2.2rem; }
-            .modal-buttons { flex-direction:column; }
+        .modal-header {
+            background: linear-gradient(90deg, #1a1a1a, #2a2a2a);
+            padding: 24px; text-align: center; border-radius: 24px 24px 0 0; position: relative;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .modal-header h2 { font-size: 1.5rem; color: #ffd700; }
+        .close { position:absolute; right:20px; top:15px; font-size:30px; cursor:pointer; color:#fff; transition: 0.2s;}
+        .close:hover { color:#ffd700; }
+        .code-container { padding: 25px; text-align: center; }
+        .premium-code {
+            background: #000; font-size: 2rem; font-family: monospace;
+            letter-spacing: 4px; padding: 20px; border-radius: 12px;
+            color: #fff; font-weight: 800; border: 1px dashed #ffd700;
+            margin: 20px 0; word-break: break-all;
+        }
+        .plan-info { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 0.9rem; text-align: left; }
+        .plan-info p { margin-bottom: 5px; color: #d0d0d0; }
+        .modal-buttons { display: flex; gap: 12px; padding: 20px 25px; }
+        .copy-btn, .close-btn {
+            flex: 1; padding: 14px; border-radius: 10px; font-weight: 600; border: none;
+            font-size: 0.95rem; cursor: pointer; transition:all .2s;
+        }
+        .copy-btn { background: #ffd700; color: #000; }
+        .copy-btn:hover { background: #ffed4a; }
+        .close-btn { background: #2a2a2a; color: #fff; }
+        .close-btn:hover { background: #3a3a3a; }
+
+        @media (max-width: 600px) {
+            .logo { font-size: 2.5rem; }
+            .plan-card { padding: 30px 20px; }
+            .price .amount { font-size: 3rem; }
+            .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 25px; }
+            .modal-buttons { flex-direction: column; }
         }
     </style>
 </head>
 <body>
+
     <div class="container">
         <header>
-            <div class="logo">
-                <h1>SpayCine<span>FHD</span></h1>
-                <div class="security-badge">🔒 Pagos 100% Seguros con PayPal</div>
+            <div class="logo">SpayCine<span>FHD</span></div>
+            <div class="badge-secure">
+                <i class="fa-solid fa-shield-halved"></i> Pagos Seguros con PayPal
             </div>
-            <p class="subtitle">Sin anuncios • Descargas ilimitadas • Soporte prioritario 24/7</p>
+            <p class="subtitle">Sin anuncios • Descargas ilimitadas • Soporte 24/7</p>
         </header>
 
-        <div class="plans-container">
-            <div class="plan-card">
-                <div class="popular-badge">⭐ ÚNICO PLAN ⭐</div>
-                <div class="plan-header">
-                    <h3>Plan Mensual</h3>
-                    <div class="price">
-                        <span class="new-price">$2.99</span>
-                        <span class="period">/mes</span>
-                    </div>
-                </div>
-                <div class="plan-features">
-                    <ul>
-                        <li>🎬 <strong>Sin anuncios</strong> - Experiencia continua</li>
-                        <li>📥 <strong>Descargas ilimitadas</strong> - Offline sin límites</li>
-                        <li>🎯 <strong>Acceso premium</strong> - Todo el contenido</li>
-                        <li>🔄 <strong>Cancelación flexible</strong> - Sin permanencia</li>
-                        <li>👑 <strong>Soporte prioritario 24/7</strong></li>
-                    </ul>
-                </div>
-                <button id="paypal-button-mensual">💳 Pagar con PayPal</button>
+        <div class="plan-card">
+            <div class="popular-badge">PLAN PREMIUM</div>
+            
+            <div class="plan-name">Plan Mensual</div>
+            <div class="price">
+                <span class="amount">$2.99</span>
+                <span class="period">/mes</span>
             </div>
+
+            <ul class="features">
+                <li><i class="fa-solid fa-check"></i> Contenido sin anuncios</li>
+                <li><i class="fa-solid fa-check"></i> Descargas ilimitadas (Offline)</li>
+                <li><i class="fa-solid fa-check"></i> Acceso total a la app</li>
+                <li><i class="fa-solid fa-check"></i> Sin contratos de permanencia</li>
+                <li><i class="fa-solid fa-check"></i> Soporte prioritario</li>
+            </ul>
+
+            <button id="paypal-button-mensual">
+                <i class="fa-brands fa-paypal" style="font-size: 1.4rem; color: #003087;"></i> Pagar con PayPal
+            </button>
         </div>
 
-        <div class="app-info">
-            <h3>📱 ¿Cómo funciona?</h3>
+        <div class="how-it-works">
+            <h2>¿Cómo funciona?</h2>
             <div class="steps">
                 <div class="step">
-                    <div class="step-number">1</div>
-                    <p>Haz clic en "Pagar con PayPal" y completa el pago seguro</p>
+                    <i class="fa-solid fa-credit-card step-icon"></i>
+                    <p>Haz clic en "Pagar con PayPal" y completa el pago de forma segura.</p>
                 </div>
                 <div class="step">
-                    <div class="step-number">2</div>
-                    <p>Recibirás un código premium exclusivo</p>
+                    <i class="fa-solid fa-key step-icon"></i>
+                    <p>Recibirás un código premium exclusivo automáticamente.</p>
                 </div>
                 <div class="step">
-                    <div class="step-number">3</div>
-                    <p>Ingresa el código en la app SpayCineFHD y disfruta</p>
-                </div>
-            </div>
-            <div class="security-features">
-                <div class="security-item">🔒 SSL 256-bit</div>
-                <div class="security-item">🛡️ Datos encriptados</div>
-                <div class="security-item">✅ Garantía inmediata</div>
-                <div class="security-item">🔄 Cancelación fácil</div>
-            </div>
-        </div>
-
-        <div id="codeModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div class="modal-header">
-                    <h2>🎉 ¡Suscripción Activada!</h2>
-                </div>
-                <div class="code-container">
-                    <p>Tu código premium exclusivo es:</p>
-                    <div id="premiumCode" class="premium-code"></div>
-                    <div id="planInfo" class="plan-info"></div>
-                    <div class="security-warning" style="background:rgba(0,0,0,.6);border-left:5px solid #e50914;padding:14px;text-align:left;border-radius:14px;">
-                        <p>⚠️ <strong>Importante:</strong> Código válido por única vez. Guárdalo para activar tu cuenta en la app.</p>
-                    </div>
-                </div>
-                <div class="modal-buttons">
-                    <button id="copyCode" class="copy-btn">📋 Copiar Código</button>
-                    <button id="closeModal" class="close-btn">✅ Entendido</button>
-                </div>
-                <div class="timer">
-                    <p>⏳ Esta ventana se cerrará en <span id="countdown">60</span> segundos</p>
+                    <i class="fa-solid fa-mobile-screen step-icon"></i>
+                    <p>Ingresa el código en la app SpayCineFHD y disfruta.</p>
                 </div>
             </div>
         </div>
-
-        <footer>
-            <p>🔐 Pagos 100% Seguros vía PayPal</p>
-            <div class="payment-icons">💳🔒💰</div>
-            <p>© 2025 SpayCineFHD Premium. Todos los derechos reservados.</p>
-        </footer>
     </div>
 
+    <!-- BOTÓN FLOTANTE DE WHATSAPP -->
+    <a href="https://wa.me/59162565596?text=Hola,%20necesito%20soporte%20con%20SpayCineFHD%20Premium" class="whatsapp-float" target="_blank" rel="noopener noreferrer">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <!-- MODAL DE CÓDIGO -->
+    <div id="codeModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-header">
+                <h2>✨ ¡Activación Exitosa!</h2>
+            </div>
+            <div class="code-container">
+                <p style="color: #a0a0a0; font-size: 0.9rem;">Tu código premium es:</p>
+                <div id="premiumCode" class="premium-code"></div>
+                <div id="planInfo" class="plan-info"></div>
+                <p style="font-size: 0.8rem; color: #ff6b6b; margin-top: 15px;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Válido por única vez. Guárdalo bien.
+                </p>
+            </div>
+            <div class="modal-buttons">
+                <button id="copyCode" class="copy-btn"><i class="fa-regular fa-copy"></i> Copiar</button>
+                <button id="closeModal" class="close-btn">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
